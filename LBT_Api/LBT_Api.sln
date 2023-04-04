@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.33502.453
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LBT_Api", "LBT_Api.csproj", "{9CF0660C-7DFE-4185-A51F-10C67FB72EEF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LBT_Api", "LBT_Api.csproj", "{9CF0660C-7DFE-4185-A51F-10C67FB72EEF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LBT_Api.Tests", "test\LBT_Api.Tests\LBT_Api.Tests.csproj", "{A5F9A829-4669-47EE-A01C-B26DB4BAD58C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{9CF0660C-7DFE-4185-A51F-10C67FB72EEF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9CF0660C-7DFE-4185-A51F-10C67FB72EEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9CF0660C-7DFE-4185-A51F-10C67FB72EEF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5F9A829-4669-47EE-A01C-B26DB4BAD58C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5F9A829-4669-47EE-A01C-B26DB4BAD58C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5F9A829-4669-47EE-A01C-B26DB4BAD58C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5F9A829-4669-47EE-A01C-B26DB4BAD58C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
