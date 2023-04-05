@@ -12,6 +12,10 @@ namespace LBT_Api.Entities
         public int ProductId { get; set; }
         public virtual Product Product { get; set; }
 
+        [ForeignKey("Sale")]
+        public int SaleId { get; set; }
+        public virtual Sale Sale { get; set; }
+
 
         [Required]
         public int AmountSold { get; set; }

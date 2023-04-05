@@ -36,7 +36,6 @@ namespace LBT_Api
             //Use HTTP Client
             services.AddHttpClient();
 
-
             // Controllers
             services.AddControllers();
 
@@ -63,15 +62,9 @@ namespace LBT_Api
             //UseCORS
             app.UseCors("Dev");
 
-            //if (env.IsDevelopment())
-            // {
             app.UseDeveloperExceptionPage();
             app.UseSwagger();
-            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "TypicalSchoolWebsite_API v1"));
-            //}
-
-            // Use Middleware
-            //app.UseMiddleware<ErrorHandlingMiddleware>();
+            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "LBT_Api v1"));
 
             // Use Jwt Tokens
             app.UseAuthentication();

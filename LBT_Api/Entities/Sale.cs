@@ -8,10 +8,6 @@ namespace LBT_Api.Entities
         [Key]
         public int Id { get; set; }
 
-        [ForeignKey("ProductSold")]
-        public int ProductSoldId { get; set; }
-        public virtual ProductSold ProductSold { get; set; }
-
 
         [ForeignKey("Worker")]
         public int WorkerId { get; set; }
