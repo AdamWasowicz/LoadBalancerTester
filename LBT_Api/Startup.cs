@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using LBT_Api.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
 namespace LBT_Api
@@ -18,13 +20,12 @@ namespace LBT_Api
 
         public void ConfigureDataBaseConections(IServiceCollection services)
         {
-            //Release
-            var localDbConectionString = Configuration["DB_CONNECTION_STRING"];
+            var localDbConectionString = Configuration.GetValue<string>("DefaultValues:DbConnectionString");
             var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING") ?? localDbConectionString;
 
-            //services.AddDbContext<DbContext>(options =>
-            //    options.UseNpgsql(connectionString)
-            //);
+            services.AddDbContext<LBT_DbContext>(options =>
+                options.UseNpgsql(connectionString)
+            );
         }
 
         public void ConfigureServices(IServiceCollection services)
