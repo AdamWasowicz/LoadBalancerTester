@@ -1,6 +1,6 @@
 ﻿namespace LBT_Api.Models.AddressDto
 {
-    public class CreateAdressDto
+    public class CreateAddressDto
     {
         public string Country { get; set; }
         public string City { get; set; }

@@ -1,6 +1,4 @@
 ﻿using LBT_Api.Entities;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
@@ -30,14 +28,17 @@ namespace LBT_Api
 
         public void ConfigureServices(IServiceCollection services)
         {
-            //Use Database
+            // Use Database
             ConfigureDataBaseConections(services);
 
-            //Use HTTP Client
+            // Use HTTP Client
             services.AddHttpClient();
 
             // Controllers
             services.AddControllers();
+
+            // Automapper
+            services.AddAutoMapper(GetType().Assembly);
 
             // Swagger
             services.AddSwaggerGen(c =>
@@ -59,7 +60,7 @@ namespace LBT_Api
             IApplicationBuilder app,
             IWebHostEnvironment env)
         {
-            //UseCORS
+            // UseCORS
             app.UseCors("Dev");
 
             app.UseDeveloperExceptionPage();

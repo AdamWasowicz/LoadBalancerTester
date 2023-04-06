@@ -4,10 +4,10 @@ namespace LBT_Api.Interfaces.Services
 {
     public interface IAddressService
     {
-        GetAddressDto Create(CreateAdressDto dto);
+        GetAddressDto Create(CreateAddressDto dto);
         public int Delete(int id);
         public GetAddressDto Read(int id);
-        public List<GetAddressDto> ReadAll();
+        public GetAddressDto[] ReadAll();
         public GetAddressDto Update(UpdateAddressDto dto);
     }
 }
