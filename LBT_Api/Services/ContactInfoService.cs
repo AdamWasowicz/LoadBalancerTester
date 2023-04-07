@@ -2,24 +2,25 @@
 using LBT_Api.Entities;
 using LBT_Api.Exceptions;
 using LBT_Api.Interfaces.Services;
-using LBT_Api.Models.AddressDto;
+using LBT_Api.Models.ContactInfoDto;
 using LBT_Api.Other;
+using System.Net;
 using System.Reflection;
 
 namespace LBT_Api.Services
 {
-    public class AddressService : IAddressService
+    public class ContactInfoService : IContactInfoService
     {
         private readonly LBT_DbContext _dbContext;
         private readonly IMapper _mapper;
 
-        public AddressService(LBT_DbContext dbContext, IMapper mapper)
+        public ContactInfoService(LBT_DbContext dbContext, IMapper mapper)
         {
             _dbContext = dbContext;
             _mapper = mapper;
         }
 
-        public GetAddressDto Create(CreateAddressDto dto)
+        public GetContactInfoDto Create(CreateContactInfoDto dto)
         {
             // Check dto
             if (dto == null)
@@ -31,10 +32,10 @@ namespace LBT_Api.Services
                 throw new BadRequestException("Dto is missing fields");
 
             // Create record
-            Address address = _mapper.Map<Address>(dto);
+            ContactInfo contactInfo = _mapper.Map<ContactInfo>(dto);
             try
             {
-                _dbContext.Addresses.Add(address);
+                _dbContext.ContactInfos.Add(contactInfo);
                 _dbContext.SaveChanges();
             }
             catch (Exception exception)
@@ -42,22 +43,22 @@ namespace LBT_Api.Services
                 throw new DatabaseOperationFailedException(exception.Message);
             }
 
-            GetAddressDto outputDto = _mapper.Map<GetAddressDto>(address);
-            
+            GetContactInfoDto outputDto = _mapper.Map<GetContactInfoDto>(contactInfo);
+
             return outputDto;
         }
 
         public int Delete(int id)
         {
             // Check if record exists
-            Address? address = _dbContext.Addresses.FirstOrDefault(a => a.Id == id);
-            if (address == null)
-                throw new NotFoundException("Address with Id: " + id);
+            ContactInfo? contactInfo = _dbContext.ContactInfos.FirstOrDefault(a => a.Id == id);
+            if (contactInfo == null)
+                throw new NotFoundException("ContactInfo with Id: " + id);
 
             // Delete record
             try
             {
-                _dbContext.Addresses.Remove(address);
+                _dbContext.ContactInfos.Remove(contactInfo);
                 _dbContext.SaveChanges();
             }
             catch (Exception exception)
@@ -68,28 +69,28 @@ namespace LBT_Api.Services
             return 0;
         }
 
-        public GetAddressDto Read(int id)
+        public GetContactInfoDto Read(int id)
         {
             // Check if record exists
-            Address? address = _dbContext.Addresses.FirstOrDefault(a => a.Id == id);
-            if (address == null)
-                throw new NotFoundException("Address with Id: " + id);
+            ContactInfo? contactInfo = _dbContext.ContactInfos.FirstOrDefault(a => a.Id == id);
+            if (contactInfo == null)
+                throw new NotFoundException("ContactInfo with Id: " + id);
 
-            // Return GetAddressDto
-            GetAddressDto outputDto = _mapper.Map<GetAddressDto>(address);
-            
+            // Return GetContactInfoDto
+            GetContactInfoDto outputDto = _mapper.Map<GetContactInfoDto>(contactInfo);
+
             return outputDto;
         }
 
-        public GetAddressDto[] ReadAll()
+        public GetContactInfoDto[] ReadAll()
         {
-            Address[] addresses = _dbContext.Addresses.ToArray();
-            GetAddressDto[] addressesDto = _mapper.Map<GetAddressDto[]>(addresses);
-            
-            return addressesDto;
+            ContactInfo[] contactInfos = _dbContext.ContactInfos.ToArray();
+            GetContactInfoDto[] contactInfoDtos = _mapper.Map<GetContactInfoDto[]>(contactInfos);
+
+            return contactInfoDtos;
         }
 
-        public GetAddressDto Update(UpdateAddressDto dto)
+        public GetContactInfoDto Update(UpdateContactInfoDto dto)
         {
             // Check dto
             if (dto == null)
@@ -99,12 +100,12 @@ namespace LBT_Api.Services
                 throw new BadRequestException("Dto is missing Id field");
 
             // Check if record exist
-            Address? address = _dbContext.Addresses.FirstOrDefault(a => a.Id == dto.Id);
-            if (address == null)
-                throw new NotFoundException("Address with Id: " + dto.Id);
+            ContactInfo? contactInfo = _dbContext.ContactInfos.FirstOrDefault(a => a.Id == dto.Id);
+            if (contactInfo == null)
+                throw new NotFoundException("ContactInfo with Id: " + dto.Id);
 
-            Address mappedAddressFromDto = _mapper.Map<Address>(dto);
-            address = Tools.UpdateObjectProperties(address, mappedAddressFromDto);
+            ContactInfo mappedContactInfoFromDto = _mapper.Map<ContactInfo>(dto);
+            contactInfo = Tools.UpdateObjectProperties(contactInfo, mappedContactInfoFromDto);
 
             // Save changes
             try
@@ -116,8 +117,8 @@ namespace LBT_Api.Services
                 throw new DatabaseOperationFailedException(exception.Message);
             }
 
-            GetAddressDto outputDto = _mapper.Map<GetAddressDto>(address);
-            
+            GetContactInfoDto outputDto = _mapper.Map<GetContactInfoDto>(contactInfo);
+
             return outputDto;
         }
     }

@@ -73,7 +73,7 @@ namespace LBT_Api.Tests.Services
 
         [Test]
         [Category("Create")]
-        public void Create_DtoIsValid_ReturnGetAddressDto()
+        public void Create_DtoIsValid_ReturnDto()
         {
             // Arrange
             Company company = Tools.GetExampleCompanyWithDependecies(_dbContext);
@@ -137,7 +137,7 @@ namespace LBT_Api.Tests.Services
 
         [Test]
         [Category("Read")]
-        public void Read_IdInDb_ReturnGetAddressDto()
+        public void Read_IdInDb_ReturnDto()
         {
             // Arrange
             Company company = Tools.GetExampleCompanyWithDependecies(_dbContext);
@@ -177,7 +177,7 @@ namespace LBT_Api.Tests.Services
         [Test]
         [Category("ReadAll")]
         [TestCase(3)]
-        public void ReadAll_RecordsInDb_ReturnArrayOfGetAddressDto(int howManyToAdd)
+        public void ReadAll_RecordsInDb_ReturnDtoArray(int howManyToAdd)
         {
             // Arrange
             for (int i = 0; i < howManyToAdd; i++)
@@ -235,7 +235,7 @@ namespace LBT_Api.Tests.Services
 
         [Test]
         [Category("Update")]
-        public void Update_DtoIsValid_ReturnGetAddressDto()
+        public void Update_DtoIsValid_ReturnDto()
         {
             // Arrange
             Company company = Tools.GetExampleCompanyWithDependecies(_dbContext);

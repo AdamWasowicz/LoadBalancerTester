@@ -28,13 +28,7 @@ namespace LBT_Api.Services
                 throw new ArgumentNullException(nameof(dto));
 
             // Check dto fields
-            bool dtoIsValid = true;
-            foreach (PropertyInfo prop in dto.GetType().GetProperties())
-            {
-                var type = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
-                if (type == typeof(string))
-                    dtoIsValid = prop.GetValue(dto, null) == null || prop.GetValue(dto, null).ToString().Length == 0 ? false : dtoIsValid;
-            }
+            bool dtoIsValid = Tools.AllStringPropsAreNotNull(dto);
             if (dtoIsValid == false)
                 throw new BadRequestException("Dto is missing fields");
 
