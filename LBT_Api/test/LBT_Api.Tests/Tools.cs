@@ -24,18 +24,6 @@ namespace LBT_Api.Tests
         }
 
         // Address
-        public static CreateAddressDto GetExampleCreateAddressDto()
-        {
-            CreateAddressDto dto = new CreateAddressDto()
-            {
-                Country = "Country",
-                City = "City",
-                Street = "Street",
-                BuildingNumber = "BuildingNumber",
-            };
-
-            return dto;
-        }
 
         public static Address GetExampleAddress()
         {
@@ -49,5 +37,54 @@ namespace LBT_Api.Tests
 
             return address;
         }
+
+        // Company
+        public static Company GetExampleCompany(int addressId = -1, int contactInfoId = -1)
+        {
+            Company company = new Company()
+            {
+                AddressId = addressId,
+                ContactInfoId = contactInfoId,
+                Name = "Name",
+            };
+
+            return company;
+        }
+
+        /// <summary>
+        /// Creates dependent rows of Company and returns Company
+        /// </summary>
+        /// <param name="dbContext">Context for Db</param>
+        /// <returns>Company that was not yet added to dbContext</returns>
+        public static Company GetExampleCompanyWithDependecies(LBT_DbContext dbContext)
+        {
+            // Address
+            Address address = GetExampleAddress();
+            dbContext.Addresses.Add(address);
+            dbContext.SaveChanges();
+
+            // ContactInfo
+            ContactInfo contactInfo = GetExampleContactInfo();
+            dbContext.ContactInfos.Add(contactInfo);
+            dbContext.SaveChanges();
+
+            // Company
+            Company company = GetExampleCompany(address.Id, contactInfo.Id);
+
+            return company;
+        }
+
+        // ContactInfo
+        public static ContactInfo GetExampleContactInfo()
+        {
+            ContactInfo contactInfo = new ContactInfo()
+            {
+                Email = "Email",
+                PhoneNumber = "PhoneNumber",
+            };
+
+            return contactInfo;
+        }
+
     }
 }

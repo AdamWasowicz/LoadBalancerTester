@@ -20,7 +20,7 @@ namespace LBT_Api.Other
             CreateMap<UpdateAddressDto, Address>();
 
             // Company
-            CreateMap<Company, GetAddressDto>();
+            CreateMap<Company, GetCompanyDto>();
             CreateMap<CreateCompanyDto, Company>();
             CreateMap<UpdateCompanyDto, Company>();
 

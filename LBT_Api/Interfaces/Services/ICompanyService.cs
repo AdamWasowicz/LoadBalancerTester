@@ -7,7 +7,7 @@ namespace LBT_Api.Interfaces.Services
         GetCompanyDto Create(CreateCompanyDto dto);
         public int Delete(int id);
         public GetCompanyDto Read(int id);
-        public List<GetCompanyDto> ReadAll();
+        public GetCompanyDto[] ReadAll();
         public GetCompanyDto Update(UpdateCompanyDto dto);
     }
 }

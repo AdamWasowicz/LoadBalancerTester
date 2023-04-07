@@ -1,30 +1,29 @@
 ﻿using AutoMapper;
 using LBT_Api.Entities;
+using LBT_Api.Exceptions;
 using LBT_Api.Interfaces.Services;
+using LBT_Api.Models.AddressDto;
+using LBT_Api.Models.CompanyDto;
 using LBT_Api.Other;
 using LBT_Api.Services;
-using LBT_Api.Models.AddressDto;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using LBT_Api.Exceptions;
-using Newtonsoft.Json;
-using LBT_Api.Tests;
-using Microsoft.AspNetCore.Mvc;
 
 namespace LBT_Api.Tests.Services
 {
     /// <summary>
-    /// Unit tests for AddressService implementation of IAddressService interface
+    /// Unit tests for CompanyService implementation of ICompanyService interface
     /// </summary>
     [TestFixture]
-    public class AddressServiceTests
+    public class CompanyServiceTests
     {
         private LBT_DbContext _dbContext;
-        private IAddressService _service;
+        private ICompanyService _service;
 
         [SetUp]
         public void SetUp()
@@ -40,15 +39,14 @@ namespace LBT_Api.Tests.Services
             IMapper mapper = mapperConfig.CreateMapper();
 
             // Service
-            _service = new AddressService(_dbContext, mapper);
+            _service = new CompanyService(_dbContext, mapper);
         }
 
         [TearDown]
-        public void TearDown() 
+        public void TearDown()
         {
             _dbContext.Dispose();
         }
-
 
         // CreateTests
         [Test]
@@ -56,7 +54,7 @@ namespace LBT_Api.Tests.Services
         public void Create_DtoIsNull_ThrowArgumentNullException()
         {
             // Arrange
-            CreateAddressDto dto = null;
+            CreateCompanyDto dto = null;
 
             // Assert
             Assert.Throws<ArgumentNullException>(() => _service.Create(dto));
@@ -64,10 +62,10 @@ namespace LBT_Api.Tests.Services
 
         [Test]
         [Category("Create")]
-        public void Create_DtoHasMissingFields_ThrowBadRequestException() 
+        public void Create_DtoHasMissingFields_ThrowBadRequestException()
         {
             // Arrange
-            CreateAddressDto dto = new CreateAddressDto();
+            CreateCompanyDto dto = new CreateCompanyDto();
 
             // Assert
             Assert.Throws<BadRequestException>(() => _service.Create(dto));
@@ -78,17 +76,17 @@ namespace LBT_Api.Tests.Services
         public void Create_DtoIsValid_ReturnGetAddressDto()
         {
             // Arrange
-            CreateAddressDto dto = new CreateAddressDto()
+            Company company = Tools.GetExampleCompanyWithDependecies(_dbContext);
+            CreateCompanyDto dto = new CreateCompanyDto()
             {
-                Country = "Country",
-                City = "City",
-                Street = "Street",
-                BuildingNumber = "BuildingNumber",
+                AddressId = company.AddressId,
+                ContactInfoId = company.ContactInfoId,
+                Name = company.Name
             };
 
             // Act
-            GetAddressDto result = _service.Create(dto);
-            int howManyRecordsAfterOperation = _dbContext.Addresses.ToArray().Length;
+            var result = _service.Create(dto);
+            int howManyRecordsAfterOperation = _dbContext.Companys.ToArray().Length;
 
             // Assert
             Assert.That(result, Is.Not.Null);
@@ -112,13 +110,13 @@ namespace LBT_Api.Tests.Services
         public void Delete_IdInDb_ReturnZero()
         {
             // Arrange
-            Address address = Tools.GetExampleAddress();
-            _dbContext.Addresses.Add(address);
+            Company company = Tools.GetExampleCompanyWithDependecies(_dbContext);
+            _dbContext.Companys.Add(company);
             _dbContext.SaveChanges();
 
             // Act
-            int result = _service.Delete(address.Id);
-            int numberOfRecordsAfterOperation = _dbContext.Addresses.ToArray().Length;
+            int result = _service.Delete(company.Id);
+            int numberOfRecordsAfterOperation = _dbContext.Companys.ToArray().Length;
 
             // Assert
             Assert.That(result, Is.EqualTo(0));
@@ -142,16 +140,23 @@ namespace LBT_Api.Tests.Services
         public void Read_IdInDb_ReturnGetAddressDto()
         {
             // Arrange
-            Address address = Tools.GetExampleAddress();
-            _dbContext.Addresses.Add(address);
+            Company company = Tools.GetExampleCompanyWithDependecies(_dbContext);
+            _dbContext.Companys.Add(company);
             _dbContext.SaveChanges();
 
             // Act
-            GetAddressDto result = _service.Read(address.Id);
+            GetCompanyDto result = _service.Read(company.Id);
+            GetCompanyDto companyAsDto = new GetCompanyDto()
+            {
+                Id = company.Id,
+                AddressId = company.AddressId,
+                ContactInfoId = company.ContactInfoId,
+                Name = company.Name
+            };
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Tools.AssertObjectsAreSameAsJSON(result, address);
+            Tools.AssertObjectsAreSameAsJSON(result, companyAsDto);
         }
 
         // ReadAllTests
@@ -163,7 +168,7 @@ namespace LBT_Api.Tests.Services
             int numberOfRecordsInDb = _dbContext.Addresses.ToArray().Length;
 
             // Act
-            GetAddressDto[] result = _service.ReadAll();
+            GetCompanyDto[] result = _service.ReadAll();
 
             // Assert
             Assert.That(result.Length, Is.EqualTo(numberOfRecordsInDb));
@@ -177,14 +182,14 @@ namespace LBT_Api.Tests.Services
             // Arrange
             for (int i = 0; i < howManyToAdd; i++)
             {
-                Address address = Tools.GetExampleAddress();
-                _dbContext.Addresses.Add(address);
+                Company company = Tools.GetExampleCompanyWithDependecies(_dbContext);
+                _dbContext.Companys.Add(company);
                 _dbContext.SaveChanges();
             }
             int howManyRecordsInDb = _dbContext.Addresses.ToArray().Length;
 
             // Act
-            GetAddressDto[] result = _service.ReadAll();
+            GetCompanyDto[] result = _service.ReadAll();
 
             // Assert
             Assert.That(result.Length, Is.EqualTo(howManyToAdd));
@@ -197,7 +202,7 @@ namespace LBT_Api.Tests.Services
         public void Update_DtoIsNull_ThrowArgumentNullException()
         {
             // Arrange
-            UpdateAddressDto dto = null;
+            UpdateCompanyDto dto = null;
 
             // Assert
             Assert.Throws<ArgumentNullException>(() => _service.Update(dto));
@@ -208,10 +213,10 @@ namespace LBT_Api.Tests.Services
         public void Update_DtoIsMissingId_ThrowBadRequestException()
         {
             // Arrange
-            UpdateAddressDto dto = new UpdateAddressDto();
+            UpdateCompanyDto dto = new UpdateCompanyDto();
 
             // Assert
-            Assert.Throws<BadRequestException>(() =>  _service.Update(dto));
+            Assert.Throws<BadRequestException>(() => _service.Update(dto));
         }
 
         [Test]
@@ -219,7 +224,7 @@ namespace LBT_Api.Tests.Services
         public void Update_IdFromDtoNotInDb_ThrowNotFoundException()
         {
             // Arrange
-            UpdateAddressDto dto = new UpdateAddressDto()
+            UpdateCompanyDto dto = new UpdateCompanyDto()
             {
                 Id = -1
             };
@@ -233,32 +238,30 @@ namespace LBT_Api.Tests.Services
         public void Update_DtoIsValid_ReturnGetAddressDto()
         {
             // Arrange
-            Address address = Tools.GetExampleAddress();
-            _dbContext.Addresses.Add(address);
+            Company company = Tools.GetExampleCompanyWithDependecies(_dbContext);
+            _dbContext.Companys.Add(company);
             _dbContext.SaveChanges();
 
-            UpdateAddressDto dto = new UpdateAddressDto()
+            UpdateCompanyDto dto = new UpdateCompanyDto()
             {
-                Id = address.Id,
-                Country = address.Country + "Updated",
-                City = address.City + "Updated",
-                Street = address.Street + "Updated",
-                BuildingNumber = address.BuildingNumber + "Updated",
+                Id = company.Id,
+                AddressId = company.AddressId,
+                ContactInfoId = company.ContactInfoId,
+                Name = company.Name + "Updated"
             };
 
             // Act
-            GetAddressDto result = _service.Update(dto);
-            GetAddressDto addressAsDto = new GetAddressDto()
+            GetCompanyDto result = _service.Update(dto);
+            UpdateCompanyDto resultAsDto = new UpdateCompanyDto()
             {
-                Id = address.Id,
-                Country = address.Country,
-                City = address.City,
-                Street = address.Street,
-                BuildingNumber = address.BuildingNumber,
+                Id = result.Id,
+                AddressId = result.AddressId,
+                ContactInfoId = result.ContactInfoId,
+                Name = result.Name,
             };
 
             // Assert
-            Tools.AssertObjectsAreSameAsJSON(result, addressAsDto);
+            Tools.AssertObjectsAreSameAsJSON(resultAsDto, dto);
         }
     }
 }
