@@ -1,33 +1,32 @@
 ﻿using AutoMapper;
 using LBT_Api.Entities;
+using LBT_Api.Exceptions;
 using LBT_Api.Interfaces.Services;
+using LBT_Api.Models.ProductDto;
+using LBT_Api.Models.ProductSoldDto;
 using LBT_Api.Other;
 using LBT_Api.Services;
-using LBT_Api.Models.AddressDto;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using LBT_Api.Exceptions;
-using Newtonsoft.Json;
-using LBT_Api.Tests;
-using Microsoft.AspNetCore.Mvc;
 
 namespace LBT_Api.Tests.Services
 {
     /// <summary>
-    /// Unit tests for AddressService implementation of IAddressService interface
+    /// Unit tests for ProductSold implementation of IProductSold interface
     /// </summary>
     [TestFixture]
-    public class AddressServiceTests
+    public class ProductSoldServiceTests
     {
         private LBT_DbContext _dbContext;
-        private IAddressService _service;
+        private IProductSoldService _service;
 
         [SetUp]
-        public void SetUp()
+        public void Setup()
         {
             // Set up in-memory database
             var builder = new DbContextOptionsBuilder<LBT_DbContext>();
@@ -40,15 +39,14 @@ namespace LBT_Api.Tests.Services
             IMapper mapper = mapperConfig.CreateMapper();
 
             // Service
-            _service = new AddressService(_dbContext, mapper);
+            _service = new ProductSoldService(_dbContext, mapper);
         }
 
         [TearDown]
-        public void TearDown() 
+        public void TearDown()
         {
             _dbContext.Dispose();
         }
-
 
         // CreateTests
         [Test]
@@ -56,7 +54,7 @@ namespace LBT_Api.Tests.Services
         public void Create_DtoIsNull_ThrowArgumentNullException()
         {
             // Arrange
-            CreateAddressDto dto = null;
+            CreateProductSold_SoloDto dto = null;
 
             // Assert
             Assert.Throws<ArgumentNullException>(() => _service.Create(dto));
@@ -64,10 +62,10 @@ namespace LBT_Api.Tests.Services
 
         [Test]
         [Category("Create")]
-        public void Create_DtoHasMissingFields_ThrowBadRequestException() 
+        public void Create_DtoHasMissingFields_ThrowBadRequestException()
         {
             // Arrange
-            CreateAddressDto dto = new CreateAddressDto();
+            CreateProductSold_SoloDto dto = new CreateProductSold_SoloDto();
 
             // Assert
             Assert.Throws<BadRequestException>(() => _service.Create(dto));
@@ -78,21 +76,31 @@ namespace LBT_Api.Tests.Services
         public void Create_DtoIsValid_ReturnDto()
         {
             // Arrange
-            CreateAddressDto dto = new CreateAddressDto()
+            Product product = Tools.GetExampleProductWithDependencies(_dbContext);
+            _dbContext.Products.Add(product);
+            _dbContext.SaveChanges();
+
+            Sale sale = Tools.GetExampleSaleWithDependencies(_dbContext);
+            _dbContext.Sales.Add(sale);
+            _dbContext.SaveChanges();
+
+            CreateProductSold_SoloDto dto = new CreateProductSold_SoloDto()
             {
-                Country = "Country",
-                City = "City",
-                Street = "Street",
-                BuildingNumber = "BuildingNumber",
+                AmountSold = 1,
+                ProductId = product.Id,
+                SaleId = sale.Id
             };
 
             // Act
-            GetAddressDto result = _service.Create(dto);
-            int howManyRecordsAfterOperation = _dbContext.Addresses.ToArray().Length;
+            GetProductSoldDto result = _service.Create(dto);
 
             // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.That(howManyRecordsAfterOperation, Is.EqualTo(1));
+            double saleSumValue = _dbContext.Sales.FirstOrDefault(s => s.Id == sale.Id).SumValue;
+            double expectedSumValue = _dbContext.ProductsSold.Where(ps => ps.SaleId == sale.Id).Sum(ps => ps.AmountSold * ps.PriceAtTheTimeOfSale);
+            int amountOfRowsInDb = _dbContext.ProductsSold.Count();
+
+            Assert.That(saleSumValue, Is.EqualTo(expectedSumValue));
+            Assert.That(amountOfRowsInDb, Is.EqualTo(1));
         }
 
         // DeleteTests
@@ -112,13 +120,13 @@ namespace LBT_Api.Tests.Services
         public void Delete_IdInDb_ReturnZero()
         {
             // Arrange
-            Address address = Tools.GetExampleAddress();
-            _dbContext.Addresses.Add(address);
+            ProductSold ps = Tools.GetExampleProductSoldWithDependencies(_dbContext);
+            _dbContext.ProductsSold.Add(ps);
             _dbContext.SaveChanges();
 
             // Act
-            int result = _service.Delete(address.Id);
-            int numberOfRecordsAfterOperation = _dbContext.Addresses.ToArray().Length;
+            int result = _service.Delete(ps.Id);
+            int numberOfRecordsAfterOperation = _dbContext.ProductsSold.ToArray().Length;
 
             // Assert
             Assert.That(result, Is.EqualTo(0));
@@ -142,16 +150,15 @@ namespace LBT_Api.Tests.Services
         public void Read_IdInDb_ReturnDto()
         {
             // Arrange
-            Address address = Tools.GetExampleAddress();
-            _dbContext.Addresses.Add(address);
+            ProductSold ps = Tools.GetExampleProductSoldWithDependencies(_dbContext);
+            _dbContext.ProductsSold.Add(ps);
             _dbContext.SaveChanges();
 
             // Act
-            GetAddressDto result = _service.Read(address.Id);
+            GetProductSoldDto result = _service.Read(ps.Id);
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Tools.AssertObjectsAreSameAsJSON(result, address);
         }
 
         // ReadAllTests
@@ -163,9 +170,8 @@ namespace LBT_Api.Tests.Services
             int numberOfRecordsInDb = _dbContext.Addresses.ToArray().Length;
 
             // Act
-            GetAddressDto[] result = _service.ReadAll();
+            GetProductSoldDto[] result = _service.ReadAll();
 
-            // Assert
             Assert.That(result.Length, Is.EqualTo(numberOfRecordsInDb));
             Assert.That(result.Length, Is.EqualTo(0));
         }
@@ -178,14 +184,14 @@ namespace LBT_Api.Tests.Services
             // Arrange
             for (int i = 0; i < howManyToAdd; i++)
             {
-                Address address = Tools.GetExampleAddress();
-                _dbContext.Addresses.Add(address);
+                ProductSold ps = Tools.GetExampleProductSoldWithDependencies(_dbContext);
+                _dbContext.ProductsSold.Add(ps);
                 _dbContext.SaveChanges();
             }
-            int howManyRecordsInDb = _dbContext.Addresses.ToArray().Length;
+            int howManyRecordsInDb = _dbContext.ProductsSold.ToArray().Length;
 
             // Act
-            GetAddressDto[] result = _service.ReadAll();
+            GetProductSoldDto[] result = _service.ReadAll();
 
             // Assert
             Assert.That(result.Length, Is.EqualTo(howManyToAdd));
@@ -198,7 +204,7 @@ namespace LBT_Api.Tests.Services
         public void Update_DtoIsNull_ThrowArgumentNullException()
         {
             // Arrange
-            UpdateAddressDto dto = null;
+            UpdateProductSoldDto dto = null;
 
             // Assert
             Assert.Throws<ArgumentNullException>(() => _service.Update(dto));
@@ -209,10 +215,10 @@ namespace LBT_Api.Tests.Services
         public void Update_DtoIsMissingId_ThrowBadRequestException()
         {
             // Arrange
-            UpdateAddressDto dto = new UpdateAddressDto();
+            UpdateProductSoldDto dto = new UpdateProductSoldDto();
 
             // Assert
-            Assert.Throws<BadRequestException>(() =>  _service.Update(dto));
+            Assert.Throws<BadRequestException>(() => _service.Update(dto));
         }
 
         [Test]
@@ -220,7 +226,7 @@ namespace LBT_Api.Tests.Services
         public void Update_IdFromDtoNotInDb_ThrowNotFoundException()
         {
             // Arrange
-            UpdateAddressDto dto = new UpdateAddressDto()
+            UpdateProductSoldDto dto = new UpdateProductSoldDto()
             {
                 Id = -1
             };
@@ -234,32 +240,29 @@ namespace LBT_Api.Tests.Services
         public void Update_DtoIsValid_ReturnDto()
         {
             // Arrange
-            Address address = Tools.GetExampleAddress();
-            _dbContext.Addresses.Add(address);
+            ProductSold ps = Tools.GetExampleProductSoldWithDependencies(_dbContext);
+            _dbContext.ProductsSold.Add(ps);
             _dbContext.SaveChanges();
 
-            UpdateAddressDto dto = new UpdateAddressDto()
+            UpdateProductSoldDto dto = new UpdateProductSoldDto()
             {
-                Id = address.Id,
-                Country = address.Country + "Updated",
-                City = address.City + "Updated",
-                Street = address.Street + "Updated",
-                BuildingNumber = address.BuildingNumber + "Updated",
+                Id = ps.Id,
+                AmountSold = ps.AmountSold + 1,
+                PriceAtTheTimeOfSale = ps.PriceAtTheTimeOfSale + 1,
+                ProductId = ps.ProductId,
+                SaleId = ps.SaleId
             };
 
             // Act
-            GetAddressDto result = _service.Update(dto);
-            GetAddressDto addressAsDto = new GetAddressDto()
-            {
-                Id = address.Id,
-                Country = address.Country,
-                City = address.City,
-                Street = address.Street,
-                BuildingNumber = address.BuildingNumber,
-            };
+            GetProductSoldDto result = _service.Update(dto);
 
             // Assert
-            Tools.AssertObjectsAreSameAsJSON(result, addressAsDto);
+            double saleSumValue = _dbContext.Sales.FirstOrDefault(s => s.Id == ps.SaleId).SumValue;
+            double expectedSumValue = _dbContext.ProductsSold.Where(ps => ps.SaleId == ps.SaleId).Sum(ps => ps.AmountSold * ps.PriceAtTheTimeOfSale);
+            int amountOfRowsInDb = _dbContext.ProductsSold.Count();
+
+            Assert.That(saleSumValue, Is.EqualTo(expectedSumValue));
+            Assert.That(amountOfRowsInDb, Is.EqualTo(1));
         }
     }
 }

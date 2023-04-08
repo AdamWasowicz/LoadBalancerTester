@@ -2,12 +2,12 @@
 
 namespace LBT_Api.Interfaces.Services
 {
-    public interface IProductSoldDto
+    public interface IProductSoldService
     {
-        GetProductSoldDto Create(CreateProductSoldDto dto);
+        GetProductSoldDto Create(CreateProductSold_SoloDto dto);
         public int Delete(int id);
         public GetProductSoldDto Read(int id);
-        public List<GetProductSoldDto> ReadAll();
+        public GetProductSoldDto[] ReadAll();
         public GetProductSoldDto Update(UpdateProductSoldDto dto);
     }
 }

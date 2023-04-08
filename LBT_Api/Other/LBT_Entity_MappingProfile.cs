@@ -4,6 +4,7 @@ using LBT_Api.Models.AddressDto;
 using LBT_Api.Models.CompanyDto;
 using LBT_Api.Models.ContactInfoDto;
 using LBT_Api.Models.ProductDto;
+using LBT_Api.Models.ProductSoldDto;
 using LBT_Api.Models.SaleDto;
 using LBT_Api.Models.SupplierDto;
 using LBT_Api.Models.WorkerDto;
@@ -33,6 +34,13 @@ namespace LBT_Api.Other
             CreateMap<Product, GetProductDto>();
             CreateMap<CreateProductDto, Product>();
             CreateMap<UpdateProductDto, Product>();
+
+            // ProductSold
+            CreateMap<ProductSold, GetProductSoldDto>();
+            CreateMap<CreateProductSold_SoloDto, ProductSold>();
+            CreateMap<CreateProductSold_IntegratedDto, ProductSold>();
+            CreateMap<UpdateProductSoldDto, ProductSold>();
+            CreateMap<UpdateProductSoldDto, GetProductSoldDto>();
 
             // Sale
             CreateMap<Sale, GetSaleDto>();

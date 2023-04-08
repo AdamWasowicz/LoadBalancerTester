@@ -1,30 +1,29 @@
 ﻿using AutoMapper;
 using LBT_Api.Entities;
+using LBT_Api.Exceptions;
 using LBT_Api.Interfaces.Services;
+using LBT_Api.Models.ProductDto;
 using LBT_Api.Other;
 using LBT_Api.Services;
-using LBT_Api.Models.AddressDto;
 using Microsoft.EntityFrameworkCore;
+using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using LBT_Api.Exceptions;
-using Newtonsoft.Json;
-using LBT_Api.Tests;
-using Microsoft.AspNetCore.Mvc;
 
 namespace LBT_Api.Tests.Services
 {
     /// <summary>
-    /// Unit tests for AddressService implementation of IAddressService interface
+    /// Unit tests for ProductService implementation of IProductService interface
     /// </summary>
     [TestFixture]
-    public class AddressServiceTests
+    public class ProductServiceTests
     {
         private LBT_DbContext _dbContext;
-        private IAddressService _service;
+        private IProductService _service;
 
         [SetUp]
         public void SetUp()
@@ -40,15 +39,14 @@ namespace LBT_Api.Tests.Services
             IMapper mapper = mapperConfig.CreateMapper();
 
             // Service
-            _service = new AddressService(_dbContext, mapper);
+            _service = new ProductService(_dbContext, mapper);
         }
 
         [TearDown]
-        public void TearDown() 
+        public void TearDown()
         {
             _dbContext.Dispose();
         }
-
 
         // CreateTests
         [Test]
@@ -56,7 +54,7 @@ namespace LBT_Api.Tests.Services
         public void Create_DtoIsNull_ThrowArgumentNullException()
         {
             // Arrange
-            CreateAddressDto dto = null;
+            CreateProductDto dto = null;
 
             // Assert
             Assert.Throws<ArgumentNullException>(() => _service.Create(dto));
@@ -64,10 +62,10 @@ namespace LBT_Api.Tests.Services
 
         [Test]
         [Category("Create")]
-        public void Create_DtoHasMissingFields_ThrowBadRequestException() 
+        public void Create_DtoHasMissingFields_ThrowBadRequestException()
         {
             // Arrange
-            CreateAddressDto dto = new CreateAddressDto();
+            CreateProductDto dto = new CreateProductDto();
 
             // Assert
             Assert.Throws<BadRequestException>(() => _service.Create(dto));
@@ -78,17 +76,20 @@ namespace LBT_Api.Tests.Services
         public void Create_DtoIsValid_ReturnDto()
         {
             // Arrange
-            CreateAddressDto dto = new CreateAddressDto()
+            Supplier supplier = Tools.GetExampleSupplierWithDependencies(_dbContext);
+            _dbContext.Suppliers.Add(supplier);
+            _dbContext.SaveChanges();
+
+            CreateProductDto dto = new CreateProductDto()
             {
-                Country = "Country",
-                City = "City",
-                Street = "Street",
-                BuildingNumber = "BuildingNumber",
+                Name = "Name",
+                PriceNow = 10,
+                SupplierId = supplier.Id,
             };
 
             // Act
-            GetAddressDto result = _service.Create(dto);
-            int howManyRecordsAfterOperation = _dbContext.Addresses.ToArray().Length;
+            GetProductDto result = _service.Create(dto);
+            int howManyRecordsAfterOperation = _dbContext.Products.ToArray().Length;
 
             // Assert
             Assert.That(result, Is.Not.Null);
@@ -112,13 +113,13 @@ namespace LBT_Api.Tests.Services
         public void Delete_IdInDb_ReturnZero()
         {
             // Arrange
-            Address address = Tools.GetExampleAddress();
-            _dbContext.Addresses.Add(address);
+            Product product = Tools.GetExampleProductWithDependencies(_dbContext);
+            _dbContext.Products.Add(product);
             _dbContext.SaveChanges();
 
             // Act
-            int result = _service.Delete(address.Id);
-            int numberOfRecordsAfterOperation = _dbContext.Addresses.ToArray().Length;
+            int result = _service.Delete(product.Id);
+            int numberOfRecordsAfterOperation = _dbContext.Products.ToArray().Length;
 
             // Assert
             Assert.That(result, Is.EqualTo(0));
@@ -142,16 +143,23 @@ namespace LBT_Api.Tests.Services
         public void Read_IdInDb_ReturnDto()
         {
             // Arrange
-            Address address = Tools.GetExampleAddress();
-            _dbContext.Addresses.Add(address);
+            Product product = Tools.GetExampleProductWithDependencies(_dbContext);
+            _dbContext.Products.Add(product);
             _dbContext.SaveChanges();
 
             // Act
-            GetAddressDto result = _service.Read(address.Id);
+            GetProductDto result = _service.Read(product.Id);
+            GetProductDto productAsDto = new GetProductDto()
+            {
+                Id = product.Id,
+                Name = product.Name,
+                PriceNow = product.PriceNow,
+                SupplierId = product.SupplierId
+            };
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Tools.AssertObjectsAreSameAsJSON(result, address);
+            Tools.AssertObjectsAreSameAsJSON(result, productAsDto);
         }
 
         // ReadAllTests
@@ -160,10 +168,10 @@ namespace LBT_Api.Tests.Services
         public void ReadAll_NoRecordsInDb_ReturnEmptyArray()
         {
             // Assert
-            int numberOfRecordsInDb = _dbContext.Addresses.ToArray().Length;
+            int numberOfRecordsInDb = _dbContext.Products.ToArray().Length;
 
             // Act
-            GetAddressDto[] result = _service.ReadAll();
+            GetProductDto[] result = _service.ReadAll();
 
             // Assert
             Assert.That(result.Length, Is.EqualTo(numberOfRecordsInDb));
@@ -178,14 +186,14 @@ namespace LBT_Api.Tests.Services
             // Arrange
             for (int i = 0; i < howManyToAdd; i++)
             {
-                Address address = Tools.GetExampleAddress();
-                _dbContext.Addresses.Add(address);
+                Product product = Tools.GetExampleProductWithDependencies(_dbContext);
+                _dbContext.Products.Add(product);
                 _dbContext.SaveChanges();
             }
-            int howManyRecordsInDb = _dbContext.Addresses.ToArray().Length;
+            int howManyRecordsInDb = _dbContext.Products.ToArray().Length;
 
             // Act
-            GetAddressDto[] result = _service.ReadAll();
+            GetProductDto[] result = _service.ReadAll();
 
             // Assert
             Assert.That(result.Length, Is.EqualTo(howManyToAdd));
@@ -198,7 +206,7 @@ namespace LBT_Api.Tests.Services
         public void Update_DtoIsNull_ThrowArgumentNullException()
         {
             // Arrange
-            UpdateAddressDto dto = null;
+            UpdateProductDto dto = null;
 
             // Assert
             Assert.Throws<ArgumentNullException>(() => _service.Update(dto));
@@ -209,10 +217,10 @@ namespace LBT_Api.Tests.Services
         public void Update_DtoIsMissingId_ThrowBadRequestException()
         {
             // Arrange
-            UpdateAddressDto dto = new UpdateAddressDto();
+            UpdateProductDto dto = new UpdateProductDto();
 
             // Assert
-            Assert.Throws<BadRequestException>(() =>  _service.Update(dto));
+            Assert.Throws<BadRequestException>(() => _service.Update(dto));
         }
 
         [Test]
@@ -220,7 +228,7 @@ namespace LBT_Api.Tests.Services
         public void Update_IdFromDtoNotInDb_ThrowNotFoundException()
         {
             // Arrange
-            UpdateAddressDto dto = new UpdateAddressDto()
+            UpdateProductDto dto = new UpdateProductDto()
             {
                 Id = -1
             };
@@ -234,32 +242,30 @@ namespace LBT_Api.Tests.Services
         public void Update_DtoIsValid_ReturnDto()
         {
             // Arrange
-            Address address = Tools.GetExampleAddress();
-            _dbContext.Addresses.Add(address);
+            Product product = Tools.GetExampleProductWithDependencies(_dbContext);
+            _dbContext.Products.Add(product);
             _dbContext.SaveChanges();
 
-            UpdateAddressDto dto = new UpdateAddressDto()
+            UpdateProductDto dto = new UpdateProductDto()
             {
-                Id = address.Id,
-                Country = address.Country + "Updated",
-                City = address.City + "Updated",
-                Street = address.Street + "Updated",
-                BuildingNumber = address.BuildingNumber + "Updated",
+                Id = product.Id,
+                Name = product.Name + "Updated",
+                PriceNow = product.PriceNow + 1,
+                SupplierId = product.SupplierId
             };
 
             // Act
-            GetAddressDto result = _service.Update(dto);
-            GetAddressDto addressAsDto = new GetAddressDto()
+            GetProductDto result = _service.Update(dto);
+            GetProductDto productAsDto = new GetProductDto()
             {
-                Id = address.Id,
-                Country = address.Country,
-                City = address.City,
-                Street = address.Street,
-                BuildingNumber = address.BuildingNumber,
+                Id = product.Id,
+                Name = product.Name,
+                PriceNow = product.PriceNow,
+                SupplierId = product.SupplierId
             };
 
             // Assert
-            Tools.AssertObjectsAreSameAsJSON(result, addressAsDto);
+            Tools.AssertObjectsAreSameAsJSON(result, productAsDto);
         }
     }
 }

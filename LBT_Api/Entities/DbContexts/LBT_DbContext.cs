@@ -8,10 +8,10 @@ namespace LBT_Api.Entities
         public DbSet<Company> Companys { get; set; }
         public DbSet<ContactInfo> ContactInfos { get; set; }
         public DbSet<Product> Products { get; set; }
-        public DbSet<ProductSold> ProductSolds { get; set; }
+        public DbSet<ProductSold> ProductsSold { get; set; }
         public DbSet<Sale> Sales { get; set; }
         public DbSet<Supplier> Suppliers { get; set; }
-        public DbSet<Worker> Worker { get; set; }
+        public DbSet<Worker> Workers { get; set; }
 
         
         public LBT_DbContext(DbContextOptions options) : base(options) 

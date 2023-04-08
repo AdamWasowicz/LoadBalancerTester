@@ -7,7 +7,7 @@ namespace LBT_Api.Interfaces.Services
         GetSupplierDto Create(CreateSupplierDto dto);
         public int Delete(int id);
         public GetSupplierDto Read(int id);
-        public List<GetSupplierDto> ReadAll();
+        public GetSupplierDto[] ReadAll();
         public GetSupplierDto Update(UpdateSupplierDto dto);
     }
 }
