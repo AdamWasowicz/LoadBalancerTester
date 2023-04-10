@@ -2,28 +2,21 @@
 using LBT_Api.Entities;
 using LBT_Api.Exceptions;
 using LBT_Api.Interfaces.Services;
-using LBT_Api.Models.AddressDto;
-using LBT_Api.Models.SupplierDto;
+using LBT_Api.Models.WorkerDto;
 using LBT_Api.Other;
 using LBT_Api.Services;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LBT_Api.Tests.Services
 {
     /// <summary>
-    /// Unit tests for SupplierService implementation of ISupplierService interface
+    /// Unit tests for WorkerService implementation of IWorkerService interface
     /// </summary>
     [TestFixture]
-    public class SupplierServiceTests
+    public class WorkerServiceTests
     {
         private LBT_DbContext _dbContext;
-        private ISupplierService _service;
+        private IWorkerService _service;
 
         [SetUp]
         public void SetUp()
@@ -39,7 +32,7 @@ namespace LBT_Api.Tests.Services
             IMapper mapper = mapperConfig.CreateMapper();
 
             // Service
-            _service = new SupplierService(_dbContext, mapper);
+            _service = new WorkerService(_dbContext, mapper);
         }
 
         [TearDown]
@@ -54,7 +47,7 @@ namespace LBT_Api.Tests.Services
         public void Create_DtoIsNull_ThrowArgumentNullException()
         {
             // Arrange
-            CreateSupplierDto dto = null;
+            CreateWorkerDto dto = null;
 
             // Assert
             Assert.Throws<ArgumentNullException>(() => _service.Create(dto));
@@ -65,7 +58,7 @@ namespace LBT_Api.Tests.Services
         public void Create_DtoHasMissingFields_ThrowBadRequestException()
         {
             // Arrange
-            CreateSupplierDto dto = new CreateSupplierDto();
+            CreateWorkerDto dto = new CreateWorkerDto();
 
             // Assert
             Assert.Throws<BadRequestException>(() => _service.Create(dto));
@@ -76,23 +69,32 @@ namespace LBT_Api.Tests.Services
         public void Create_DtoIsValid_ReturnDto()
         {
             // Arrange
+            Company company = Tools.GetExampleCompanyWithDependecies(_dbContext);
+            _dbContext.Companys.Add(company);
+            _dbContext.SaveChanges();
+
             Address address = Tools.GetExampleAddress();
             _dbContext.Addresses.Add(address);
             _dbContext.SaveChanges();
 
-            CreateSupplierDto dto = new CreateSupplierDto()
+            ContactInfo ci = Tools.GetExampleContactInfo();
+            _dbContext.ContactInfos.Add(ci);
+            _dbContext.SaveChanges();
+
+            CreateWorkerDto dto = new CreateWorkerDto()
             {
+                CompanyId = company.Id,
+                AddressId = address.Id,
+                ContactInfoId = ci.Id,
                 Name = "Name",
-                AddressId = address.Id
+                Surname = "Surname"
             };
 
             // Act
-            GetSupplierDto result = _service.Create(dto);
-            int howManyRecordsAfterOperation = _dbContext.Suppliers.ToArray().Length;
+            GetWorkerDto result = _service.Create(dto);
 
             // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.That(howManyRecordsAfterOperation, Is.EqualTo(1));
+            Assert.That(result, Is.Not.Null);   
         }
 
         // DeleteTests
@@ -112,17 +114,21 @@ namespace LBT_Api.Tests.Services
         public void Delete_IdInDb_ReturnZero()
         {
             // Arrange
-            Supplier supplier = Tools.GetExampleSupplierWithDependencies(_dbContext);
-            _dbContext.Suppliers.Add(supplier);
+            Worker worker = Tools.GetExampleWorkerWithDependencies(_dbContext);
+            _dbContext.Workers.Add(worker);
             _dbContext.SaveChanges();
 
-            // Act
-            int result = _service.Delete(supplier.Id);
-            int numberOfRecordsAfterOperation = _dbContext.Suppliers.ToArray().Length;
+            int numberOfRecordsBeforeOperation = _dbContext.Workers.Count();
 
-            // Assert
+            // Act
+            var result = _service.Delete(worker.Id);
+
+            //Assert
+            int numberOfRecordsAfterOperation = _dbContext.Workers.Count();
+
             Assert.That(result, Is.EqualTo(0));
             Assert.That(numberOfRecordsAfterOperation, Is.EqualTo(0));
+            Assert.That(numberOfRecordsBeforeOperation, Is.GreaterThan(numberOfRecordsAfterOperation));
         }
 
         // ReadTests
@@ -142,16 +148,16 @@ namespace LBT_Api.Tests.Services
         public void Read_IdInDb_ReturnDto()
         {
             // Arrange
-            Supplier supplier = Tools.GetExampleSupplierWithDependencies(_dbContext);
-            _dbContext.Suppliers.Add(supplier);
+            Worker worker = Tools.GetExampleWorkerWithDependencies(_dbContext);
+            _dbContext.Workers.Add(worker);
             _dbContext.SaveChanges();
 
             // Act
-            GetSupplierDto result  = _service.Read(supplier.Id);
+            GetWorkerDto result = _service.Read(worker.Id);
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.That(supplier.Id, Is.EqualTo(result.Id));
+            Assert.That(worker.Id, Is.EqualTo(result.Id));
         }
 
         // ReadAllTests
@@ -160,10 +166,10 @@ namespace LBT_Api.Tests.Services
         public void ReadAll_NoRecordsInDb_ReturnEmptyArray()
         {
             // Assert
-            int numberOfRecordsInDb = _dbContext.Suppliers.ToArray().Length;
+            int numberOfRecordsInDb = _dbContext.Workers.ToArray().Length;
 
             // Act
-            GetSupplierDto[] result = _service.ReadAll();
+            GetWorkerDto[] result = _service.ReadAll();
 
             // Assert
             Assert.That(result.Length, Is.EqualTo(numberOfRecordsInDb));
@@ -178,14 +184,14 @@ namespace LBT_Api.Tests.Services
             // Arrange
             for (int i = 0; i < howManyToAdd; i++)
             {
-                Supplier supplier = Tools.GetExampleSupplierWithDependencies(_dbContext);
-                _dbContext.Suppliers.Add(supplier);
+                Worker worker = Tools.GetExampleWorkerWithDependencies(_dbContext);
+                _dbContext.Workers.Add(worker);
                 _dbContext.SaveChanges();
             }
-            int howManyRecordsInDb = _dbContext.Suppliers.Count();
+            int howManyRecordsInDb = _dbContext.Workers.Count();
 
             // Act
-            GetSupplierDto[] result = _service.ReadAll();
+            GetWorkerDto[] result = _service.ReadAll();
 
             // Assert
             Assert.That(result.Length, Is.EqualTo(howManyToAdd));
@@ -198,7 +204,7 @@ namespace LBT_Api.Tests.Services
         public void Update_DtoIsNull_ThrowArgumentNullException()
         {
             // Arrange
-            UpdateSupplierDto dto = null;
+            UpdateWorkerDto dto = null;
 
             // Assert
             Assert.Throws<ArgumentNullException>(() => _service.Update(dto));
@@ -209,7 +215,7 @@ namespace LBT_Api.Tests.Services
         public void Update_DtoIsMissingId_ThrowBadRequestException()
         {
             // Arrange
-            UpdateSupplierDto dto = new UpdateSupplierDto();
+            UpdateWorkerDto dto = new UpdateWorkerDto();
 
             // Assert
             Assert.Throws<BadRequestException>(() => _service.Update(dto));
@@ -220,9 +226,9 @@ namespace LBT_Api.Tests.Services
         public void Update_IdFromDtoNotInDb_ThrowNotFoundException()
         {
             // Arrange
-            UpdateSupplierDto dto = new UpdateSupplierDto()
+            UpdateWorkerDto dto = new UpdateWorkerDto()
             {
-                Id = -1,
+                Id = -1
             };
 
             // Assert
@@ -234,28 +240,26 @@ namespace LBT_Api.Tests.Services
         public void Update_DtoIsValid_ReturnDto()
         {
             // Arrange
-            Supplier supplier = Tools.GetExampleSupplierWithDependencies(_dbContext);
-            _dbContext.Suppliers.Add(supplier);
+            Worker worker = Tools.GetExampleWorkerWithDependencies(_dbContext);
+            _dbContext.Workers.Add(worker);
             _dbContext.SaveChanges();
 
-            UpdateSupplierDto dto = new UpdateSupplierDto()
+            UpdateWorkerDto dto = new UpdateWorkerDto()
             {
-                Id = supplier.Id,
-                AddressId = supplier.AddressId,
-                Name = supplier.Name + "Updated"
+                Id = worker.Id,
+                AddressId = worker.AddressId,
+                CompanyId = worker.CompanyId,
+                ContactInfoId = worker.ContactInfoId,
+                Name = worker.Name + "Upated",
+                Surname = worker.Surname + "Updated"
             };
 
             // Act
-            GetSupplierDto result = _service.Update(dto);
-            GetSupplierDto supplierAsDto = new GetSupplierDto()
-            {
-                Id = supplier.Id,
-                AddressId = supplier.AddressId,
-                Name = supplier.Name
-            };
+            GetWorkerDto result = _service.Update(dto);
 
             // Assert
-            Tools.AssertObjectsAreSameAsJSON(result, supplierAsDto);
+            Assert.That(result.Name, Is.EqualTo(dto.Name));
+            Assert.That(result.Surname, Is.EqualTo(dto.Surname));
         }
     }
 }

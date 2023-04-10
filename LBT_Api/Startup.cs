@@ -1,4 +1,6 @@
 ﻿using LBT_Api.Entities;
+using LBT_Api.Interfaces.Services;
+using LBT_Api.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
@@ -39,6 +41,16 @@ namespace LBT_Api
 
             // Automapper
             services.AddAutoMapper(GetType().Assembly);
+
+            // Services
+            services.AddScoped<IAddressService, AddressService>();
+            services.AddScoped<ICompanyService, CompanyService>();
+            services.AddScoped<IContactInfoService, ContactInfoService>();
+            services.AddScoped<IProductService, ProductService>();
+            services.AddScoped<IProductSoldService,  ProductSoldService>();
+            services.AddScoped<ISaleService, SaleService>();
+            services.AddScoped<ISupplierService, SupplierService>();
+            services.AddScoped<IWorkerService, WorkerService>();
 
             // Swagger
             services.AddSwaggerGen(c =>

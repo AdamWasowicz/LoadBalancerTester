@@ -34,18 +34,6 @@ namespace LBT_Api.Tests
 
             return address;
         }
-        
-        public static Company GetExampleCompany(int addressId = -1, int contactInfoId = -1)
-        {
-            Company company = new Company()
-            {
-                AddressId = addressId,
-                ContactInfoId = contactInfoId,
-                Name = "Name",
-            };
-
-            return company;
-        }
 
         /// <summary>
         /// Creates dependent rows of Company and returns Company
@@ -65,7 +53,14 @@ namespace LBT_Api.Tests
             dbContext.SaveChanges();
 
             // Company
-            Company company = GetExampleCompany(address.Id, contactInfo.Id);
+            Company company = new Company()
+            {
+                AddressId = address.Id,
+                ContactInfoId = contactInfo.Id,
+                Name = "Name",
+            };
+
+            return company; ;
 
             return company;
         }
