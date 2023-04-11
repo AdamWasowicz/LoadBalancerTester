@@ -1,8 +1,13 @@
-﻿namespace LBT_Api.Models.AddressDto
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace LBT_Api.Models.AddressDto
 {
     public class UpdateAddressDto
     {
-        public int? Id { get; set; }
+        [Required]
+        public int Id { get; set; }
+
+        // Optional
         public string? Country { get; set; }
         public string? City { get; set; }
         public string? Street { get; set; }

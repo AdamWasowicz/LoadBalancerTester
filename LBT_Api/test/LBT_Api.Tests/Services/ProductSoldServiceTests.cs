@@ -54,7 +54,7 @@ namespace LBT_Api.Tests.Services
         public void Create_DtoIsNull_ThrowArgumentNullException()
         {
             // Arrange
-            CreateProductSold_SoloDto dto = null;
+            CreateProductSoldDto dto = null;
 
             // Assert
             Assert.Throws<ArgumentNullException>(() => _service.Create(dto));
@@ -65,7 +65,7 @@ namespace LBT_Api.Tests.Services
         public void Create_DtoHasMissingFields_ThrowBadRequestException()
         {
             // Arrange
-            CreateProductSold_SoloDto dto = new CreateProductSold_SoloDto();
+            CreateProductSoldDto dto = new CreateProductSoldDto();
 
             // Assert
             Assert.Throws<BadRequestException>(() => _service.Create(dto));
@@ -84,7 +84,7 @@ namespace LBT_Api.Tests.Services
             _dbContext.Sales.Add(sale);
             _dbContext.SaveChanges();
 
-            CreateProductSold_SoloDto dto = new CreateProductSold_SoloDto()
+            CreateProductSoldDto dto = new CreateProductSoldDto()
             {
                 AmountSold = 1,
                 ProductId = product.Id,

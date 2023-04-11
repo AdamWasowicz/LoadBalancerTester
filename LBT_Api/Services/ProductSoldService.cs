@@ -19,7 +19,7 @@ namespace LBT_Api.Services
             _mapper = mapper;
         }
 
-        public GetProductSoldDto Create(CreateProductSold_SoloDto dto)
+        public GetProductSoldDto Create(CreateProductSoldDto dto)
         {
             // Check dto
             if (dto == null)

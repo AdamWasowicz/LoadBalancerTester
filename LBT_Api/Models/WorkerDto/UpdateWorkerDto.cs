@@ -1,8 +1,13 @@
-﻿namespace LBT_Api.Models.WorkerDto
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace LBT_Api.Models.WorkerDto
 {
     public class UpdateWorkerDto
     {
-        public int? Id { get; set; }
+        [Required]
+        public int Id { get; set; }
+
+        // Optional
         public int? CompanyId { get; set; }
         public int? AddressId { get; set; }
         public int? ContactInfoId { get; set; }

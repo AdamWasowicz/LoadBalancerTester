@@ -37,7 +37,7 @@ namespace LBT_Api.Other
 
             // ProductSold
             CreateMap<ProductSold, GetProductSoldDto>();
-            CreateMap<CreateProductSold_SoloDto, ProductSold>();
+            CreateMap<CreateProductSoldDto, ProductSold>();
             CreateMap<CreateProductSold_IntegratedDto, ProductSold>();
             CreateMap<UpdateProductSoldDto, ProductSold>();
             CreateMap<UpdateProductSoldDto, GetProductSoldDto>();

@@ -1,8 +1,13 @@
-﻿namespace LBT_Api.Models.SaleDto
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace LBT_Api.Models.SaleDto
 {
     public class UpdateSaleDto
     {
-        public int? Id { get; set; }
+        [Required]
+        public int Id { get; set; }
+
+        // Optional
         public int? WorkerId { get; set; }
     }
 }
