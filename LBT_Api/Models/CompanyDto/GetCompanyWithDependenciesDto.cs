@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace LBT_Api.Models.CompanyDto
 {
-    public class GetCompanyWithDependencies
+    public class GetCompanyWithDependenciesDto
     {
         // Props
         [Required]

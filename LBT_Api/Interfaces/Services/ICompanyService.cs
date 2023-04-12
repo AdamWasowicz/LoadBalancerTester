@@ -5,12 +5,12 @@ namespace LBT_Api.Interfaces.Services
     public interface ICompanyService
     {
         public GetCompanyDto Create(CreateCompanyDto dto);
-        //public GetCompanyDto CreateWithDependencies(CreateCompanyWithDependencies dto);
+        public GetCompanyWithDependenciesDto CreateWithDependencies(CreateCompanyWithDependenciesDto dto);
         public int Delete(int id);
         public GetCompanyDto Read(int id);
-        //public GetCompanyWithDependencies ReadWithDependencies(int id);
+        public GetCompanyWithDependenciesDto ReadWithDependencies(int id);
         public GetCompanyDto[] ReadAll();
-        //public GetCompanyWithDependencies[] ReadAllWithDependencies();
-        public GetCompanyDto Update(UpdateCompanyDto dto);
+        public GetCompanyWithDependenciesDto[] ReadAllWithDependencies();
+        public GetCompanyDto UpdateName(UpdateCompanyNameDto dto);
     }
 }

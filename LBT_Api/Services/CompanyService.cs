@@ -2,11 +2,8 @@
 using LBT_Api.Entities;
 using LBT_Api.Exceptions;
 using LBT_Api.Interfaces.Services;
-using LBT_Api.Models.AddressDto;
 using LBT_Api.Models.CompanyDto;
 using LBT_Api.Other;
-using System.Net;
-using System.Reflection;
 
 namespace LBT_Api.Services
 {
@@ -24,13 +21,8 @@ namespace LBT_Api.Services
         public GetCompanyDto Create(CreateCompanyDto dto)
         {
             // Check dto
-            if (dto == null)
-                throw new ArgumentNullException(nameof(dto));
-
-            // Check dto fields
-            bool dtoIsValid = Tools.AllStringPropsAreNotNull(dto);
-            if (dtoIsValid == false)
-                throw new BadRequestException("Dto is missing fields");
+            if (Tools.ModelIsValid(dto) == false)
+                throw new InvalidModelException("Model is invalid");
 
             // Create record
             Company company = _mapper.Map<Company>(dto);
@@ -47,6 +39,49 @@ namespace LBT_Api.Services
             GetCompanyDto outputDto = _mapper.Map<GetCompanyDto>(company);
             return outputDto;
 
+        }
+
+        public GetCompanyWithDependenciesDto CreateWithDependencies(CreateCompanyWithDependenciesDto dto)
+        {
+            // Check dto
+            if (Tools.ModelIsValid(dto) == false)
+                throw new InvalidModelException("Model is invalid");
+
+            var transaction = _dbContext.Database.BeginTransaction();
+            Company company = null;
+
+            try
+            {
+                // Dependencies
+                Address address = _mapper.Map<Address>(dto.Address);
+                _dbContext.Addresses.Add(address);
+
+                ContactInfo ci = _mapper.Map<ContactInfo>(dto.ContactInfo);
+                _dbContext.ContactInfos.Add(ci);
+
+                // Main
+                company = new Company()
+                {
+                    AddressId = address.Id,
+                    ContactInfoId = ci.Id,
+                    Name = dto.Name
+                };
+                _dbContext.Companys.Add(company);
+
+                // Save changes
+                _dbContext.SaveChanges();
+                transaction.Commit();
+            }
+            catch (Exception exception)
+            {
+                transaction.Rollback();
+                throw new DatabaseOperationFailedException(exception.Message);
+            }
+
+            // Return dto
+            GetCompanyWithDependenciesDto outputDto = _mapper.Map<GetCompanyWithDependenciesDto>(company);
+
+            return outputDto;
         }
 
         public int Delete(int id)
@@ -80,6 +115,17 @@ namespace LBT_Api.Services
             return outputDto;
         }
 
+        public GetCompanyWithDependenciesDto ReadWithDependencies(int id)
+        {
+            Company? company = _dbContext.Companys.FirstOrDefault(c => c.Id == id);
+            if (company == null)
+                throw new NotFoundException("Company with Id: " + id);
+
+            GetCompanyWithDependenciesDto outputDto = _mapper.Map<GetCompanyWithDependenciesDto>(company);
+
+            return outputDto;
+        }
+
         public GetCompanyDto[] ReadAll()
         {
             Company[] companys = _dbContext.Companys.ToArray();
@@ -88,14 +134,19 @@ namespace LBT_Api.Services
             return companysDto;
         }
 
-        public GetCompanyDto Update(UpdateCompanyDto dto)
+        public GetCompanyWithDependenciesDto[] ReadAllWithDependencies()
+        {
+            Company[] companys = _dbContext.Companys.ToArray();
+            GetCompanyWithDependenciesDto[] companysDto = _mapper.Map<GetCompanyWithDependenciesDto[]>(companys);
+
+            return companysDto;
+        }
+
+        public GetCompanyDto UpdateName(UpdateCompanyNameDto dto)
         {
             // Check dto
-            if (dto == null)
-                throw new ArgumentNullException(nameof(dto));
-
-            if (dto.Id == null)
-                throw new BadRequestException("Dto is missing Id field");
+            if (Tools.ModelIsValid(dto) == false)
+                throw new InvalidModelException("Model is invalid");
 
             // Check if record exist
             Company? company = _dbContext.Companys.FirstOrDefault(c => c.Id == dto.Id);

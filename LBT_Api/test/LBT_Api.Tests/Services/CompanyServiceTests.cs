@@ -4,15 +4,11 @@ using LBT_Api.Exceptions;
 using LBT_Api.Interfaces.Services;
 using LBT_Api.Models.AddressDto;
 using LBT_Api.Models.CompanyDto;
+using LBT_Api.Models.ContactInfoDto;
 using LBT_Api.Other;
 using LBT_Api.Services;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace LBT_Api.Tests.Services
 {
@@ -24,6 +20,7 @@ namespace LBT_Api.Tests.Services
     {
         private LBT_DbContext _dbContext;
         private ICompanyService _service;
+        private const bool IN_MEMORY_DB = true;
 
         [SetUp]
         public void SetUp()
@@ -48,6 +45,12 @@ namespace LBT_Api.Tests.Services
             _dbContext.Dispose();
         }
 
+        public void IgnoreInMemoryDatabase()
+        {
+            if (IN_MEMORY_DB == true)
+                Assert.Ignore("Transaction are not supported in in-memory databases");
+        }
+
         // CreateTests
         [Test]
         [Category("Create")]
@@ -62,13 +65,13 @@ namespace LBT_Api.Tests.Services
 
         [Test]
         [Category("Create")]
-        public void Create_DtoHasMissingFields_ThrowBadRequestException()
+        public void Create_DtoHasMissingFields_ThrowInvalidModelException()
         {
             // Arrange
             CreateCompanyDto dto = new CreateCompanyDto();
 
             // Assert
-            Assert.Throws<BadRequestException>(() => _service.Create(dto));
+            Assert.Throws<InvalidModelException>(() => _service.Create(dto));
         }
 
         [Test]
@@ -198,70 +201,296 @@ namespace LBT_Api.Tests.Services
 
         // UpdateTests
         [Test]
-        [Category("Update")]
-        public void Update_DtoIsNull_ThrowArgumentNullException()
+        [Category("UpdateName")]
+        public void UpdateName_DtoIsNull_ThrowArgumentNullException()
         {
             // Arrange
-            UpdateCompanyDto dto = null;
+            UpdateCompanyNameDto dto = null;
 
             // Assert
-            Assert.Throws<ArgumentNullException>(() => _service.Update(dto));
+            Assert.Throws<ArgumentNullException>(() => _service.UpdateName(dto));
         }
 
         [Test]
-        [Category("Update")]
-        public void Update_DtoIsMissingId_ThrowBadRequestException()
+        [Category("UpdateName")]
+        public void UpdateName_DtoIsMissingId_ThrowInvalidModelException()
         {
             // Arrange
-            UpdateCompanyDto dto = new UpdateCompanyDto();
+            UpdateCompanyNameDto dto = new UpdateCompanyNameDto();
 
             // Assert
-            Assert.Throws<BadRequestException>(() => _service.Update(dto));
+            Assert.Throws<InvalidModelException>(() => _service.UpdateName(dto));
         }
 
         [Test]
-        [Category("Update")]
-        public void Update_IdFromDtoNotInDb_ThrowNotFoundException()
+        [Category("UpdateName")]
+        public void UpdateName_IdFromDtoNotInDb_ThrowNotFoundException()
         {
             // Arrange
-            UpdateCompanyDto dto = new UpdateCompanyDto()
+            UpdateCompanyNameDto dto = new UpdateCompanyNameDto()
             {
-                Id = -1
+                Id = -1,
+                Name = "Name"
             };
 
             // Assert
-            Assert.Throws<NotFoundException>(() => _service.Update(dto));
+            Assert.Throws<NotFoundException>(() => _service.UpdateName(dto));
         }
 
         [Test]
-        [Category("Update")]
-        public void Update_DtoIsValid_ReturnDto()
+        [Category("UpdateName")]
+        public void UpdateName_IdInDbAndNameNotInDto_ThrowInvalidModelException()
         {
             // Arrange
             Company company = Tools.GetExampleCompanyWithDependecies(_dbContext);
             _dbContext.Companys.Add(company);
             _dbContext.SaveChanges();
 
-            UpdateCompanyDto dto = new UpdateCompanyDto()
+            UpdateCompanyNameDto dto = new UpdateCompanyNameDto()
             {
                 Id = company.Id,
-                AddressId = company.AddressId,
-                ContactInfoId = company.ContactInfoId,
+            };
+
+            // Assert
+            Assert.Throws<InvalidModelException>(() => _service.UpdateName(dto));
+        }
+
+        [Test]
+        [Category("UpdateName")]
+        public void UpdateName_IdNotInDbAndNameNotInDto_ThrowInvalidModelException()
+        {
+            UpdateCompanyNameDto dto = new UpdateCompanyNameDto()
+            {
+                Id = -1,
+            };
+
+            // Assert
+            Assert.Throws<InvalidModelException>(() => _service.UpdateName(dto));
+        }
+
+        [Test]
+        [Category("UpdateName")]
+        public void UpdateName_IdNotInDtoAndNameNotInDto_ThrowInvalidModelException()
+        {
+            UpdateCompanyNameDto dto = new UpdateCompanyNameDto();
+
+            // Assert
+            Assert.Throws<InvalidModelException>(() => _service.UpdateName(dto));
+        }
+
+        [Test]
+        [Category("UpdateName")]
+        public void UpdateName_DtoIsValid_ReturnDto()
+        {
+            // Arrange
+            Company company = Tools.GetExampleCompanyWithDependecies(_dbContext);
+            _dbContext.Companys.Add(company);
+            _dbContext.SaveChanges();
+
+            UpdateCompanyNameDto dto = new UpdateCompanyNameDto()
+            {
+                Id = company.Id,
                 Name = company.Name + "Updated"
             };
 
             // Act
-            GetCompanyDto result = _service.Update(dto);
-            UpdateCompanyDto resultAsDto = new UpdateCompanyDto()
+            GetCompanyDto result = _service.UpdateName(dto);
+
+            // Assert
+            Tools.AssertObjectsAreSameAsJSON(result.Name, dto.Name);
+        }
+
+        // CreateWithDependencies
+        [Test]
+        [Category("CreateWithDependencies")]
+        //[Ignore("Transaction are not supported in-memory databases")]
+        public void CreateWithDependencies_DtoIsNull_ThrowArgumenNullException()
+        {
+            IgnoreInMemoryDatabase();
+
+            // Arrange
+            CreateCompanyWithDependenciesDto dto = null;
+
+            // Assert
+            Assert.Throws<ArgumentNullException>(() => _service.CreateWithDependencies(dto));
+        }
+
+        [Test]
+        [Category("CreateWithDependencies")]
+        //[Ignore("Transaction are not supported in-memory databases")]
+        public void CreateWithDependencies_AddressInDtoIsNull_ThrowInvalidModelException()
+        {
+            IgnoreInMemoryDatabase();
+
+            // Arrange
+            CreateCompanyWithDependenciesDto dto = new CreateCompanyWithDependenciesDto
             {
-                Id = result.Id,
-                AddressId = result.AddressId,
-                ContactInfoId = result.ContactInfoId,
-                Name = result.Name,
+                Name = "CompanyName",
+
+                Address = null,
+
+                ContactInfo = new CreateContactInfoDto
+                {
+                    Email = "Email",
+                    PhoneNumber = "1234567890",
+                }
             };
 
             // Assert
-            Tools.AssertObjectsAreSameAsJSON(resultAsDto, dto);
+            Assert.Throws<InvalidModelException>(() => _service.CreateWithDependencies(dto));
+        }
+
+        [Test]
+        [Category("CreateWithDependencies")]
+        //[Ignore("Transaction are not supported in-memory databases")]
+        public void CreateWithDependencies_ContactInfoInDtoIsNull_ThrowInvalidModelException()
+        {
+            IgnoreInMemoryDatabase();
+
+            // Arrange
+            CreateCompanyWithDependenciesDto dto = new CreateCompanyWithDependenciesDto
+            {
+                Name = "CompanyName",
+
+                Address = new CreateAddressDto
+                {
+                    BuildingNumber = "BuildingNumber",
+                    City = "City",
+                    Country = "Country",
+                    Street = "Street",
+                },
+
+                ContactInfo = null
+            };
+
+            // Assert
+            Assert.Throws<InvalidModelException>(() => _service.CreateWithDependencies(dto));
+        }
+
+        [Test]
+        [Category("CreateWithDependencies")]
+        //[Ignore("Transaction are not supported in-memory databases")]
+        public void CreateWithDependencies_ContactInfoInDtoIsNullAndAddressInDtoIsNull_ThrowInvalidModelException()
+        {
+            IgnoreInMemoryDatabase();
+
+            // Arrange
+            CreateCompanyWithDependenciesDto dto = new CreateCompanyWithDependenciesDto
+            {
+                Name = "CompanyName",
+                Address = null,
+                ContactInfo = null
+            };
+
+            // Assert
+            Assert.Throws<InvalidModelException>(() => _service.CreateWithDependencies(dto));
+        }
+
+        [Test]
+        [Category("CreateWithDependencies")]
+        //[Ignore("Transaction are not supported in-memory databases")]
+        public void CreateWithDependencies_DtoIsValid_ReturnDto()
+        {
+            IgnoreInMemoryDatabase();
+
+            // Arrange
+            CreateCompanyWithDependenciesDto dto = new CreateCompanyWithDependenciesDto
+            {
+                Name = "CompanyName",
+
+                Address = new CreateAddressDto
+                {
+                    BuildingNumber = "BuildingNumber",
+                    City = "City",
+                    Country = "Country",
+                    Street = "Street",
+                },
+
+                ContactInfo = new CreateContactInfoDto
+                {
+                    Email = "Email",
+                    PhoneNumber = "1234567890",
+                }
+            };
+
+            // Act
+            var result = _service.CreateWithDependencies(dto);
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+        }
+
+        // ReadWithDependencies
+        [Test]
+        [Category("ReadWithDependencies")]
+        public void ReadWithDependencies_IdNotInDb_ThrowNotFoundException()
+        {
+            // Arrange
+            int searchedId = -1;
+
+            // Assert
+            Assert.Throws<NotFoundException>(() => _service.ReadWithDependencies(searchedId));
+        }
+
+        [Test]
+        [Category("ReadWithDependencies")]
+        public void ReadWithDependencies_IdNotInDb_ReturnGetCompanyWithDependenciesDto()
+        {
+            // Arrange
+            Company company = Tools.GetExampleCompanyWithDependecies(_dbContext);
+            _dbContext.Companys.Add(company);
+            _dbContext.SaveChanges();
+
+            // Act
+            GetCompanyWithDependenciesDto result = _service.ReadWithDependencies(company.Id);
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.True(Tools.ModelIsValid(result));
+        }
+
+        // ReadAllWithDependencies
+        [Test]
+        [Category("ReadAllWithDependencies")]
+        public void ReadAllWithDependencies_NoRecordsInDb_ReturnEmptyArray()
+        {
+            // Assert
+            int numberOfRecordsInDb = _dbContext.Addresses.ToArray().Length;
+
+            // Act
+            GetCompanyWithDependenciesDto[] result = _service.ReadAllWithDependencies();
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.Length, Is.EqualTo(numberOfRecordsInDb));
+                Assert.That(numberOfRecordsInDb, Is.Zero);
+            });
+        }
+
+        [Test]
+        [Category("ReadAllWithDependencies")]
+        [TestCase(3)]
+        public void ReadAllWithDependencies_RecordsInDb_ReturnDtoArray(int howManyToAdd)
+        {
+            // Arrange
+            for (int i = 0; i < howManyToAdd; i++)
+            {
+                Company company = Tools.GetExampleCompanyWithDependecies(_dbContext);
+                _dbContext.Companys.Add(company);
+            }
+            _dbContext.SaveChanges();
+            int howManyRecordsInDb = _dbContext.Addresses.ToArray().Length;
+
+            // Act
+            GetCompanyWithDependenciesDto[] result = _service.ReadAllWithDependencies();
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.Length, Is.EqualTo(howManyToAdd));
+                Assert.That(result.Length, Is.EqualTo(howManyRecordsInDb));
+            });
         }
     }
 }

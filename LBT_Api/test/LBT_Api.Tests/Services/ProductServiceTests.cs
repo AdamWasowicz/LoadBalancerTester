@@ -202,7 +202,7 @@ namespace LBT_Api.Tests.Services
 
         // UpdateTests
         [Test]
-        [Category("Update")]
+        [Category("UpdateName")]
         public void Update_DtoIsNull_ThrowArgumentNullException()
         {
             // Arrange
@@ -213,7 +213,7 @@ namespace LBT_Api.Tests.Services
         }
 
         [Test]
-        [Category("Update")]
+        [Category("UpdateName")]
         public void Update_DtoIsMissingId_ThrowBadRequestException()
         {
             // Arrange
@@ -224,7 +224,7 @@ namespace LBT_Api.Tests.Services
         }
 
         [Test]
-        [Category("Update")]
+        [Category("UpdateName")]
         public void Update_IdFromDtoNotInDb_ThrowNotFoundException()
         {
             // Arrange
@@ -238,7 +238,7 @@ namespace LBT_Api.Tests.Services
         }
 
         [Test]
-        [Category("Update")]
+        [Category("UpdateName")]
         public void Update_DtoIsValid_ReturnDto()
         {
             // Arrange

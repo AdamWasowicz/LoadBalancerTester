@@ -3,6 +3,7 @@ using LBT_Api.Models.AddressDto;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -177,6 +178,11 @@ namespace LBT_Api.Tests
             return worker;
         }
 
+        /// <summary>
+        /// Creates dependent rows of ProductSold and returns ProductSold
+        /// </summary>
+        /// <param name="dbContext">Context for Db</param>
+        /// <returns>ProductSold that was not yet added to dbContext</returns>
         public static ProductSold GetExampleProductSoldWithDependencies(LBT_DbContext dbContext)
         {
             // Product
@@ -198,6 +204,24 @@ namespace LBT_Api.Tests
             };
 
             return ps;
+        }
+
+        /// <summary>
+        /// Validates given object
+        /// </summary>
+        /// <typeparam name="T">Object</typeparam>
+        /// <param name="obj">Object to be validated</param>
+        /// <returns>Validation result</returns>
+        /// <exception cref="ArgumentNullException">When obj is null</exception>
+        public static bool ModelIsValid<T>(T obj)
+        {
+            if (obj == null)
+                throw new ArgumentNullException(nameof(obj));
+
+            var context = new ValidationContext(obj, serviceProvider: null, items: null);
+            var results = new List<ValidationResult>();
+
+            return Validator.TryValidateObject(obj, context, results, true);
         }
     }
 }

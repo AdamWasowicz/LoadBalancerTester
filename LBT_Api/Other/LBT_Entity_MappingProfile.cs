@@ -23,7 +23,10 @@ namespace LBT_Api.Other
             // Company
             CreateMap<Company, GetCompanyDto>();
             CreateMap<CreateCompanyDto, Company>();
-            CreateMap<UpdateCompanyDto, Company>();
+            CreateMap<UpdateCompanyNameDto, Company>();
+            CreateMap<Company, GetCompanyWithDependenciesDto>()
+                .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address))
+                .ForMember(dest => dest.ContactInfo, opt => opt.MapFrom(src => src.ContactInfo));
 
             // ContactInfo
             CreateMap<ContactInfo, GetContactInfoDto>();

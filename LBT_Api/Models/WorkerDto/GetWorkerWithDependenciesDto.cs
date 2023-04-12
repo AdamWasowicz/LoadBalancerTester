@@ -19,7 +19,7 @@ namespace LBT_Api.Models.WorkerDto
 
         // Dependencies
         [Required]
-        public GetCompanyWithDependencies Company { get; set; }
+        public GetCompanyWithDependenciesDto Company { get; set; }
 
         [Required]
         public GetAddressDto Address { get; set; }

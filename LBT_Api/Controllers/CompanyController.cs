@@ -1,6 +1,5 @@
 ﻿using LBT_Api.Interfaces.Services;
 using LBT_Api.Models.CompanyDto;
-using LBT_Api.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LBT_Api.Controllers
@@ -23,6 +22,13 @@ namespace LBT_Api.Controllers
             return Created(result.Id.ToString(), result);
         }
 
+        [HttpPost("full")]
+        public ActionResult<GetCompanyWithDependenciesDto> CreateWithDependencies([FromBody] CreateCompanyWithDependenciesDto dto)
+        {
+            var result = _companyService.CreateWithDependencies(dto);
+            return Created(result.Id.ToString(), result);
+        }
+
         [HttpDelete("{id}")]
         public ActionResult Delete([FromRoute] int id)
         {
@@ -37,6 +43,14 @@ namespace LBT_Api.Controllers
             return Ok(result);
         }
 
+        [HttpGet("full")]
+        public ActionResult<GetCompanyDto[]> ReadAllWithDependencies()
+        {
+            var result = _companyService.ReadAllWithDependencies();
+            return Ok(result);
+        }
+
+
         [HttpGet("{id}")]
         public ActionResult<GetCompanyDto> Read([FromRoute] int id)
         {
@@ -44,10 +58,17 @@ namespace LBT_Api.Controllers
             return Ok(result);
         }
 
-        [HttpPatch]
-        public ActionResult<GetCompanyDto> Update([FromBody] UpdateCompanyDto dto)
+        [HttpGet("full/{id}")]
+        public ActionResult<GetCompanyDto> ReadWithDependencies([FromRoute] int id)
         {
-            var result = _companyService.Update(dto);
+            var result = _companyService.ReadWithDependencies(id);
+            return Ok(result);
+        }
+
+        [HttpPatch("name")]
+        public ActionResult<GetCompanyDto> Update([FromBody] UpdateCompanyNameDto dto)
+        {
+            var result = _companyService.UpdateName(dto);
             return Ok(result);
         }
     }

@@ -1,4 +1,5 @@
 ﻿using LBT_Api.Entities;
+using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 
 namespace LBT_Api.Other
@@ -37,11 +38,32 @@ namespace LBT_Api.Other
             foreach (PropertyInfo prop in obj.GetType().GetProperties())
             {
                 var type = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
-                if (type == typeof(string))
-                    isValid = prop.GetValue(obj, null) == null  ? false : isValid;
+                if (type == typeof(string) && prop.GetValue(obj, null) == null)
+                {
+                    isValid = false;
+                    break;
+                }
             }
 
             return isValid;
+        }
+
+        /// <summary>
+        /// Validates given object
+        /// </summary>
+        /// <typeparam name="T">Object</typeparam>
+        /// <param name="obj">Object to be validated</param>
+        /// <returns>Validation result</returns>
+        /// <exception cref="ArgumentNullException">When obj is null</exception>
+        public static bool ModelIsValid<T>(T obj)
+        {
+            if (obj == null)
+                throw new ArgumentNullException(nameof(obj));
+
+            var context = new ValidationContext(obj, serviceProvider: null, items: null);
+            var results = new List<ValidationResult>();
+
+            return Validator.TryValidateObject(obj, context, results, true);
         }
     }
 }
