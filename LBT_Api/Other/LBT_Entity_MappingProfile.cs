@@ -37,6 +37,8 @@ namespace LBT_Api.Other
             CreateMap<Product, GetProductDto>();
             CreateMap<CreateProductDto, Product>();
             CreateMap<UpdateProductDto, Product>();
+            CreateMap<Product, GetProductWithDependenciesDto>()
+                .ForMember(dest => dest.Supplier, opt => opt.MapFrom(src => src.Supplier));
 
             // ProductSold
             CreateMap<ProductSold, GetProductSoldDto>();
@@ -54,6 +56,8 @@ namespace LBT_Api.Other
             CreateMap<Supplier, GetSupplierDto>();
             CreateMap<CreateSupplierDto, Supplier>();
             CreateMap<UpdateSupplierDto, Supplier>();
+            CreateMap<Supplier, GetSupplierWithDependenciesDto>()
+                .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address));
 
             // Worker
             CreateMap<Worker, GetWorkerDto>();

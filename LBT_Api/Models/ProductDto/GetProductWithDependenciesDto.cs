@@ -3,9 +3,12 @@ using System.ComponentModel.DataAnnotations;
 
 namespace LBT_Api.Models.ProductDto
 {
-    public class CreateProductWithDependenciesDto
+    public class GetProductWithDependenciesDto
     {
         // Props
+        [Required]
+        public int Id { get; set; }
+
         [Required]
         public string Name { get; set; }
 
@@ -14,6 +17,6 @@ namespace LBT_Api.Models.ProductDto
 
         // Dependencies
         [Required]
-        public CreateSupplierWithDependenciesDto Supplier { get; set; }
+        public GetSupplierWithDependenciesDto Supplier { get; set; }
     }
 }

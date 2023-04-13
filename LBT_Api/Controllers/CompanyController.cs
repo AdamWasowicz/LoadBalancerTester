@@ -44,7 +44,7 @@ namespace LBT_Api.Controllers
         }
 
         [HttpGet("full")]
-        public ActionResult<GetCompanyDto[]> ReadAllWithDependencies()
+        public ActionResult<GetCompanyWithDependenciesDto[]> ReadAllWithDependencies()
         {
             var result = _companyService.ReadAllWithDependencies();
             return Ok(result);
@@ -59,14 +59,14 @@ namespace LBT_Api.Controllers
         }
 
         [HttpGet("full/{id}")]
-        public ActionResult<GetCompanyDto> ReadWithDependencies([FromRoute] int id)
+        public ActionResult<GetCompanyWithDependenciesDto> ReadWithDependencies([FromRoute] int id)
         {
             var result = _companyService.ReadWithDependencies(id);
             return Ok(result);
         }
 
         [HttpPatch("name")]
-        public ActionResult<GetCompanyDto> Update([FromBody] UpdateCompanyNameDto dto)
+        public ActionResult<GetCompanyDto> UpdateName([FromBody] UpdateCompanyNameDto dto)
         {
             var result = _companyService.UpdateName(dto);
             return Ok(result);

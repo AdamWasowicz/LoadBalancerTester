@@ -11,23 +11,20 @@ namespace LBT_Api.Services
     {
         private readonly LBT_DbContext _dbContext;
         private readonly IMapper _mapper;
+        private readonly ISupplierService _supplierService;
 
-        public ProductService(LBT_DbContext dbContext, IMapper mapper)
+        public ProductService(LBT_DbContext dbContext, IMapper mapper, ISupplierService supplierService)
         {
             _dbContext = dbContext;
             _mapper = mapper;
+            _supplierService = supplierService;
         }
 
         public GetProductDto Create(CreateProductDto dto)
         {
             // Check dto
-            if (dto == null)
-                throw new ArgumentNullException(nameof(dto));
-
-            // Check dto fields
-            bool dtoIsValid = Tools.AllStringPropsAreNotNull(dto);
-            if (dtoIsValid == false)
-                throw new BadRequestException("Dto is missing fields");
+            if (Tools.ModelIsValid(dto) == false)
+                throw new InvalidModelException("Dto is missing fields");
 
             // Create record
             Product product = _mapper.Map<Product>(dto);
@@ -42,6 +39,45 @@ namespace LBT_Api.Services
             }
 
             GetProductDto outputDto = _mapper.Map<GetProductDto>(product);
+
+            return outputDto;
+        }
+
+        public GetProductWithDependenciesDto CreateWithDependencies(CreateProductWithDependenciesDto dto)
+        {
+            // Check dto
+            if (Tools.ModelIsValid(dto) == false)
+                throw new InvalidModelException("Dto is missing fields");
+
+            var transaction = _dbContext.Database.BeginTransaction();
+            Product product = null;
+
+            try
+            {
+                // Dependencies
+                int supplierId = _supplierService.CreateWithDependencies(dto.Supplier).Id;
+
+                // Main
+                product = new Product()
+                {
+                    Name = dto.Name,
+                    PriceNow = dto.PriceNow,
+                    SupplierId = supplierId,
+                };
+                _dbContext.Products.Add(product);
+
+                // Save changes
+                _dbContext.SaveChanges();
+                transaction.Commit();
+            }
+            catch (Exception exception)
+            {
+                transaction.Rollback();
+                throw new DatabaseOperationFailedException(exception.Message);
+            }
+
+            // Return Dto
+            GetProductWithDependenciesDto outputDto = _mapper.Map<GetProductWithDependenciesDto>(product);
 
             return outputDto;
         }
@@ -74,8 +110,21 @@ namespace LBT_Api.Services
             if (product == null)
                 throw new NotFoundException("Product with Id: " + id);
 
-            // Return GetProductDto
+            // Return Dto
             GetProductDto outputDto = _mapper.Map<GetProductDto>(product);
+
+            return outputDto;
+        }
+
+        public GetProductWithDependenciesDto ReadWithDependencies(int id)
+        {
+            // Check if record exists
+            Product? product = _dbContext.Products.FirstOrDefault(p => p.Id == id);
+            if (product == null)
+                throw new NotFoundException("Product with Id: " + id);
+
+            // Return Dto
+            GetProductWithDependenciesDto outputDto = _mapper.Map<GetProductWithDependenciesDto>(product);
 
             return outputDto;
         }
@@ -83,25 +132,31 @@ namespace LBT_Api.Services
         public GetProductDto[] ReadAll()
         {
             Product[] products = _dbContext.Products.ToArray();
-            GetProductDto[] outputDtos = _mapper.Map<GetProductDto[]>(products);
+            GetProductDto[] outputDto = _mapper.Map<GetProductDto[]>(products);
 
-            return outputDtos;
+            return outputDto;
+        }
+
+        public GetProductWithDependenciesDto[] ReadAllWithDependencies()
+        {
+            Product[] products = _dbContext.Products.ToArray();
+            GetProductWithDependenciesDto[] outputDto = _mapper.Map<GetProductWithDependenciesDto[]>(products);
+
+            return outputDto;
         }
 
         public GetProductDto Update(UpdateProductDto dto)
         {
             // Check dto
-            if (dto == null)
-                throw new ArgumentNullException(nameof(dto));
-
-            if (dto.Id == null)
-                throw new BadRequestException("Dto is missing Id field");
+            if (Tools.ModelIsValid(dto) == false)
+                throw new InvalidModelException("Dto is missing fields");
 
             // Check if record exist
             Product? product = _dbContext.Products.FirstOrDefault(a => a.Id == dto.Id);
             if (product == null)
                 throw new NotFoundException("Product with Id: " + dto.Id);
 
+            // Make changes
             Product mappedProductFromDto = _mapper.Map<Product>(dto);
             product = Tools.UpdateObjectProperties(product, mappedProductFromDto);
 

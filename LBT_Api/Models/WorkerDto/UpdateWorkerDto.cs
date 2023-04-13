@@ -5,7 +5,7 @@ namespace LBT_Api.Models.WorkerDto
     public class UpdateWorkerDto
     {
         [Required]
-        public int Id { get; set; }
+        public int? Id { get; set; }
 
         // Optional
         public int? CompanyId { get; set; }

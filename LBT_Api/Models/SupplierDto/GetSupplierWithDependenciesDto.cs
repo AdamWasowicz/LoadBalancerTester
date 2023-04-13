@@ -7,6 +7,9 @@ namespace LBT_Api.Models.SupplierDto
     {
         // Props
         [Required]
+        public int Id { get; set; }
+
+        [Required]
         public string Name { get; set; }
 
         // Dependencies

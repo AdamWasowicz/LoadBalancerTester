@@ -46,6 +46,11 @@ namespace LBT_Api.Services
             return outputDto;
         }
 
+        public GetSupplierWithDependenciesDto CreateWithDependencies(CreateSupplierWithDependenciesDto dto)
+        {
+            throw new NotImplementedException();
+        }
+
         public int Delete(int id)
         {
             // Check if record exists
@@ -80,12 +85,22 @@ namespace LBT_Api.Services
             return outputDto;
         }
 
+        public GetSupplierWithDependenciesDto ReadWithDependencies(int id)
+        {
+            throw new NotImplementedException();
+        }
+
         public GetSupplierDto[] ReadAll()
         {
             Supplier[] supplier = _dbContext.Suppliers.ToArray();
             GetSupplierDto[] outputDtos = _mapper.Map<GetSupplierDto[]>(supplier);
 
             return outputDtos;
+        }
+
+        public GetSupplierWithDependenciesDto[] ReadAllWithDependencies()
+        {
+            throw new NotImplementedException();
         }
 
         public GetSupplierDto Update(UpdateSupplierDto dto)

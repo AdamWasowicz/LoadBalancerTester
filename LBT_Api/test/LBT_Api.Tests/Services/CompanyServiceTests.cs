@@ -417,7 +417,11 @@ namespace LBT_Api.Tests.Services
             var result = _service.CreateWithDependencies(dto);
 
             // Assert
-            Assert.That(result, Is.Not.Null);
+            Assert.Multiple(() =>
+            {
+                Assert.NotNull(result);
+                Assert.IsTrue(Tools.ModelIsValid(result));
+            });
         }
 
         // ReadWithDependencies
