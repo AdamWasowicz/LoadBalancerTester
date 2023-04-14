@@ -2,6 +2,9 @@
 using LBT_Api.Entities;
 using LBT_Api.Exceptions;
 using LBT_Api.Interfaces.Services;
+using LBT_Api.Models.AddressDto;
+using LBT_Api.Models.CompanyDto;
+using LBT_Api.Models.ContactInfoDto;
 using LBT_Api.Models.WorkerDto;
 using LBT_Api.Other;
 using LBT_Api.Services;
@@ -31,8 +34,11 @@ namespace LBT_Api.Tests.Services
             var mapperConfig = new MapperConfiguration(cfg => cfg.AddProfile<LBT_Entity_MappingProfile>());
             IMapper mapper = mapperConfig.CreateMapper();
 
+            // Dependencies 
+            ICompanyService companyService = new CompanyService(_dbContext, mapper);
+
             // Service
-            _service = new WorkerService(_dbContext, mapper);
+            _service = new WorkerService(_dbContext, mapper, companyService);
         }
 
         [TearDown]
@@ -41,7 +47,7 @@ namespace LBT_Api.Tests.Services
             _dbContext.Dispose();
         }
 
-        // CreateTests
+        // Create
         [Test]
         [Category("Create")]
         public void Create_DtoIsNull_ThrowArgumentNullException()
@@ -55,13 +61,13 @@ namespace LBT_Api.Tests.Services
 
         [Test]
         [Category("Create")]
-        public void Create_DtoHasMissingFields_ThrowBadRequestException()
+        public void Create_DtoHasMissingFields_ThrowInvalidModelException()
         {
             // Arrange
             CreateWorkerDto dto = new CreateWorkerDto();
 
             // Assert
-            Assert.Throws<BadRequestException>(() => _service.Create(dto));
+            Assert.Throws<InvalidModelException>(() => _service.Create(dto));
         }
 
         [Test]
@@ -97,7 +103,90 @@ namespace LBT_Api.Tests.Services
             Assert.That(result, Is.Not.Null);   
         }
 
-        // DeleteTests
+        // CreateWithDependencies
+        [Test]
+        [Category("CreateWithDependencies")]
+        //[Ignore("Transaction are not supported in-memory databases")]
+        public void CreateWithDependencies_DtoIsNull_ThrowArgumenNullException()
+        {
+            Tools.IgnoreInMemoryDatabase();
+
+            // Arrange
+            CreateWorkerWithDependenciesDto dto = null;
+
+            // Assert
+            Assert.Throws<ArgumentNullException>(() => _service.CreateWithDependencies(dto));
+        }
+
+        [Test]
+        [Category("CreateWithDependencies")]
+        //[Ignore("Transaction are not supported in-memory databases")]
+        public void CreateWithDependencies_DtoIsMissingFields_ThrowInvalidException()
+        {
+            Tools.IgnoreInMemoryDatabase();
+
+            // Arrange
+            CreateWorkerWithDependenciesDto dto = new CreateWorkerWithDependenciesDto
+            {
+                Name = "Name",
+                Surname = "Surname",
+                Comapny = null,
+                Address = null,
+                ContactInfo = null
+            };
+
+            // Assert
+            Assert.Throws<InvalidModelException>(() => _service.CreateWithDependencies(dto));
+        }
+
+        [Test]
+        [Category("CreateWithDependencies")]
+        //[Ignore("Transaction are not supported in-memory databases")]
+        public void CreateWithDependencies_DtoIsValid_ReturnDto()
+        {
+            Tools.IgnoreInMemoryDatabase();
+
+            // Arrange
+            CreateAddressDto address = new CreateAddressDto
+            {
+                Country = "Country",
+                City = "City",
+                Street = "Street",
+                BuildingNumber = "BuildingNumber"
+            };
+
+            CreateContactInfoDto ci = new CreateContactInfoDto
+            {
+                Email = "Email",
+                PhoneNumber = "PhoneNumber"
+            };
+
+            CreateWorkerWithDependenciesDto dto = new CreateWorkerWithDependenciesDto
+            {
+                Name = "Name",
+                Surname = "Surname",
+                Comapny = new CreateCompanyWithDependenciesDto
+                {
+                    Name = "Name",
+                    Address = address,
+                    ContactInfo = ci
+                },
+                Address = address,
+                ContactInfo = ci
+            };
+
+            // Act
+            var result = _service.CreateWithDependencies(dto);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.NotNull(result);
+                Assert.IsTrue(Tools.ModelIsValid(result));
+            });
+        }
+
+        // Delete
         [Test]
         [Category("Delete")]
         public void Delete_IdNotInDb_ThrowNotFoundException()
@@ -131,7 +220,7 @@ namespace LBT_Api.Tests.Services
             Assert.That(numberOfRecordsBeforeOperation, Is.GreaterThan(numberOfRecordsAfterOperation));
         }
 
-        // ReadTests
+        // Read
         [Test]
         [Category("Read")]
         public void Read_IdNotInDb_ThrowNotFoundException()
@@ -160,7 +249,39 @@ namespace LBT_Api.Tests.Services
             Assert.That(worker.Id, Is.EqualTo(result.Id));
         }
 
-        // ReadAllTests
+        // ReadWithDependencies
+        [Test]
+        [Category("ReadWithDependencies")]
+        public void ReadWithDependencies_IdNotInDb_ThrowNotFoundException()
+        {
+            // Arrange
+            int searchedId = -1;
+
+            // Assert
+            Assert.Throws<NotFoundException>(() => _service.ReadWithDependencies(searchedId));
+        }
+
+        [Test]
+        [Category("ReadWithDependencies")]
+        public void ReadWithDependencies_IdNotInDb_ReturnGetCompanyWithDependenciesDto()
+        {
+            // Arrange
+            Worker worker = Tools.GetExampleWorkerWithDependencies(_dbContext);
+            _dbContext.Workers.Add(worker);
+            _dbContext.SaveChanges();
+
+            // Act
+            GetWorkerWithDependenciesDto result = _service.ReadWithDependencies(worker.Id);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.That(result, Is.Not.Null);
+                Assert.True(Tools.ModelIsValid(result));
+            });
+        }
+
+        // ReadAll
         [Test]
         [Category("ReadAll")]
         public void ReadAll_NoRecordsInDb_ReturnEmptyArray()
@@ -198,7 +319,50 @@ namespace LBT_Api.Tests.Services
             Assert.That(result.Length, Is.EqualTo(howManyRecordsInDb));
         }
 
-        // UpdateTests
+        // ReadAllWithDependencies
+        [Test]
+        [Category("ReadAllWithDependencies")]
+        public void ReadAllWithDependencies_NoRecordsInDb_ReturnEmptyArray()
+        {
+            // Assert
+            int numberOfRecordsInDb = _dbContext.Workers.ToArray().Length;
+
+            // Act
+            GetWorkerWithDependenciesDto[] result = _service.ReadAllWithDependencies();
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.Length, Is.EqualTo(numberOfRecordsInDb));
+                Assert.That(numberOfRecordsInDb, Is.Zero);
+            });
+        }
+
+        [Test]
+        [Category("ReadAllWithDependencies")]
+        [TestCase(3)]
+        public void ReadAllWithDependencies_RecordsInDb_ReturnDtoArray(int howManyToAdd)
+        {
+            for (int i = 0; i < howManyToAdd; i++)
+            {
+                Worker worker = Tools.GetExampleWorkerWithDependencies(_dbContext);
+                _dbContext.Workers.Add(worker);
+            }
+            _dbContext.SaveChanges();
+            int howManyRecordsInDb = _dbContext.Workers.ToArray().Length;
+
+            // Act
+            GetWorkerWithDependenciesDto[] result = _service.ReadAllWithDependencies();
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.Length, Is.EqualTo(howManyToAdd));
+                Assert.That(result.Length, Is.EqualTo(howManyRecordsInDb));
+            });
+        }
+
+        // Update
         [Test]
         [Category("Update")]
         public void Update_DtoIsNull_ThrowArgumentNullException()
@@ -247,9 +411,6 @@ namespace LBT_Api.Tests.Services
             UpdateWorkerDto dto = new UpdateWorkerDto()
             {
                 Id = worker.Id,
-                AddressId = worker.AddressId,
-                CompanyId = worker.CompanyId,
-                ContactInfoId = worker.ContactInfoId,
                 Name = worker.Name + "Upated",
                 Surname = worker.Surname + "Updated"
             };

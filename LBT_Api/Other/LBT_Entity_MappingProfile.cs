@@ -63,6 +63,10 @@ namespace LBT_Api.Other
             CreateMap<Worker, GetWorkerDto>();
             CreateMap<CreateWorkerDto, Worker>();
             CreateMap<UpdateWorkerDto, Worker>();
+            CreateMap<Worker, GetWorkerWithDependenciesDto>()
+                .ForMember(dest => dest.Company, opt => opt.MapFrom(src => src.Company))
+                .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address))
+                .ForMember(dest => dest.ContactInfo, opt => opt.MapFrom(src => src.ContactInfo));
         }
     }
 }

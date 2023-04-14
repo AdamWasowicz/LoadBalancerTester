@@ -442,8 +442,11 @@ namespace LBT_Api.Tests.Services
             GetCompanyWithDependenciesDto result = _service.ReadWithDependencies(company.Id);
 
             // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.True(Tools.ModelIsValid(result));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result, Is.Not.Null);
+                Assert.True(Tools.ModelIsValid(result));
+            });
         }
 
         // ReadAllWithDependencies

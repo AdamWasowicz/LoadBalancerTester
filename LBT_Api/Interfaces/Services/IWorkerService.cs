@@ -4,10 +4,13 @@ namespace LBT_Api.Interfaces.Services
 {
     public interface IWorkerService
     {
-        GetWorkerDto Create(CreateWorkerDto dto);
+        public GetWorkerDto Create(CreateWorkerDto dto);
+        public GetWorkerWithDependenciesDto CreateWithDependencies(CreateWorkerWithDependenciesDto dto);
         public int Delete(int id);
         public GetWorkerDto Read(int id);
+        public GetWorkerWithDependenciesDto ReadWithDependencies(int id);
         public GetWorkerDto[] ReadAll();
+        public GetWorkerWithDependenciesDto[] ReadAllWithDependencies();
         public GetWorkerDto Update(UpdateWorkerDto dto);
     }
 }
