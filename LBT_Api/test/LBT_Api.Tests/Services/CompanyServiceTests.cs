@@ -20,7 +20,6 @@ namespace LBT_Api.Tests.Services
     {
         private LBT_DbContext _dbContext;
         private ICompanyService _service;
-        private const bool IN_MEMORY_DB = true;
 
         [SetUp]
         public void SetUp()
@@ -43,12 +42,6 @@ namespace LBT_Api.Tests.Services
         public void TearDown()
         {
             _dbContext.Dispose();
-        }
-
-        public void IgnoreInMemoryDatabase()
-        {
-            if (IN_MEMORY_DB == true)
-                Assert.Ignore("Transaction are not supported in in-memory databases");
         }
 
         // CreateTests
@@ -306,7 +299,7 @@ namespace LBT_Api.Tests.Services
         //[Ignore("Transaction are not supported in-memory databases")]
         public void CreateWithDependencies_DtoIsNull_ThrowArgumenNullException()
         {
-            IgnoreInMemoryDatabase();
+            Tools.IgnoreInMemoryDatabase();
 
             // Arrange
             CreateCompanyWithDependenciesDto dto = null;
@@ -320,7 +313,7 @@ namespace LBT_Api.Tests.Services
         //[Ignore("Transaction are not supported in-memory databases")]
         public void CreateWithDependencies_AddressInDtoIsNull_ThrowInvalidModelException()
         {
-            IgnoreInMemoryDatabase();
+            Tools.IgnoreInMemoryDatabase();
 
             // Arrange
             CreateCompanyWithDependenciesDto dto = new CreateCompanyWithDependenciesDto
@@ -345,7 +338,7 @@ namespace LBT_Api.Tests.Services
         //[Ignore("Transaction are not supported in-memory databases")]
         public void CreateWithDependencies_ContactInfoInDtoIsNull_ThrowInvalidModelException()
         {
-            IgnoreInMemoryDatabase();
+            Tools.IgnoreInMemoryDatabase();
 
             // Arrange
             CreateCompanyWithDependenciesDto dto = new CreateCompanyWithDependenciesDto
@@ -372,7 +365,7 @@ namespace LBT_Api.Tests.Services
         //[Ignore("Transaction are not supported in-memory databases")]
         public void CreateWithDependencies_ContactInfoInDtoIsNullAndAddressInDtoIsNull_ThrowInvalidModelException()
         {
-            IgnoreInMemoryDatabase();
+            Tools.IgnoreInMemoryDatabase();
 
             // Arrange
             CreateCompanyWithDependenciesDto dto = new CreateCompanyWithDependenciesDto
@@ -391,7 +384,7 @@ namespace LBT_Api.Tests.Services
         //[Ignore("Transaction are not supported in-memory databases")]
         public void CreateWithDependencies_DtoIsValid_ReturnDto()
         {
-            IgnoreInMemoryDatabase();
+            Tools.IgnoreInMemoryDatabase();
 
             // Arrange
             CreateCompanyWithDependenciesDto dto = new CreateCompanyWithDependenciesDto
@@ -484,7 +477,7 @@ namespace LBT_Api.Tests.Services
                 _dbContext.Companys.Add(company);
             }
             _dbContext.SaveChanges();
-            int howManyRecordsInDb = _dbContext.Addresses.ToArray().Length;
+            int howManyRecordsInDb = _dbContext.Companys.ToArray().Length;
 
             // Act
             GetCompanyWithDependenciesDto[] result = _service.ReadAllWithDependencies();

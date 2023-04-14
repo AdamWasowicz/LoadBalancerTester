@@ -12,6 +12,14 @@ namespace LBT_Api.Tests
 {
     public static class Tools
     {
+        private const bool IN_MEMORY_DB = true;
+
+        public static void IgnoreInMemoryDatabase()
+        {
+            if (IN_MEMORY_DB == true)
+                Assert.Ignore("Transaction are not supported in in-memory databases");
+        }
+
         public static string AsJSON(object obj)
         {
             string output = JsonConvert.SerializeObject(obj);

@@ -21,13 +21,8 @@ namespace LBT_Api.Services
         public GetSupplierDto Create(CreateSupplierDto dto)
         {
             // Check dto
-            if (dto == null)
-                throw new ArgumentNullException(nameof(dto));
-
-            // Check dto fields
-            bool dtoIsValid = Tools.AllStringPropsAreNotNull(dto);
-            if (dtoIsValid == false)
-                throw new BadRequestException("Dto is missing fields");
+            if (Tools.ModelIsValid(dto) == false)
+                throw new InvalidModelException();
 
             // Create record
             Supplier supplier = _mapper.Map<Supplier>(dto);
@@ -48,7 +43,41 @@ namespace LBT_Api.Services
 
         public GetSupplierWithDependenciesDto CreateWithDependencies(CreateSupplierWithDependenciesDto dto)
         {
-            throw new NotImplementedException();
+            // Check dto
+            if (Tools.ModelIsValid(dto) == false)
+                throw new InvalidModelException();
+
+            var transaction = _dbContext.Database.BeginTransaction();
+            Supplier supplier = null;
+
+            try
+            {
+                // Dependencies
+                Address address = _mapper.Map<Address>(dto.Address);
+                _dbContext.Addresses.Add(address);
+
+                // Main
+                supplier = new Supplier
+                {
+                    AddressId = address.Id,
+                    Name = dto.Name,
+                };
+
+                _dbContext.Suppliers.Add(supplier);
+                _dbContext.SaveChanges();
+                transaction.Commit();
+            }
+            catch (Exception exception)
+            {
+                transaction.Rollback();
+                throw new DatabaseOperationFailedException(exception.Message);
+            }
+
+            // Return dto
+            GetSupplierWithDependenciesDto outputDto = _mapper.Map<GetSupplierWithDependenciesDto>(supplier);
+
+            return outputDto;
+
         }
 
         public int Delete(int id)
@@ -87,30 +116,38 @@ namespace LBT_Api.Services
 
         public GetSupplierWithDependenciesDto ReadWithDependencies(int id)
         {
-            throw new NotImplementedException();
+            // Check if record exists
+            Supplier? supplier = _dbContext.Suppliers.FirstOrDefault(s => s.Id == id);
+            if (supplier == null)
+                throw new NotFoundException("Supplier with Id: " + id);
+
+            // Return Dto
+            GetSupplierWithDependenciesDto outputDto = _mapper.Map<GetSupplierWithDependenciesDto>(supplier);
+
+            return outputDto;
         }
 
         public GetSupplierDto[] ReadAll()
         {
             Supplier[] supplier = _dbContext.Suppliers.ToArray();
-            GetSupplierDto[] outputDtos = _mapper.Map<GetSupplierDto[]>(supplier);
+            GetSupplierDto[] outputDto = _mapper.Map<GetSupplierDto[]>(supplier);
 
-            return outputDtos;
+            return outputDto;
         }
 
         public GetSupplierWithDependenciesDto[] ReadAllWithDependencies()
         {
-            throw new NotImplementedException();
-        }
+            Supplier[] suppliers = _dbContext.Suppliers.ToArray();
+            GetSupplierWithDependenciesDto[] outputDto = _mapper.Map<GetSupplierWithDependenciesDto[]>(suppliers);
+        
+            return outputDto;
+         }
 
         public GetSupplierDto Update(UpdateSupplierDto dto)
         {
             // Check dto
-            if (dto == null)
-                throw new ArgumentNullException(nameof(dto));
-
-            if (dto.Id == null)
-                throw new BadRequestException("Dto is missing Id field");
+            if (Tools.ModelIsValid(dto) == false)
+                throw new InvalidModelException();
 
             // Check if record exist
             Supplier? supplier = _dbContext.Suppliers.FirstOrDefault(s => s.Id == dto.Id);

@@ -3,6 +3,7 @@ using LBT_Api.Entities;
 using LBT_Api.Exceptions;
 using LBT_Api.Interfaces.Services;
 using LBT_Api.Models.AddressDto;
+using LBT_Api.Models.CompanyDto;
 using LBT_Api.Models.SupplierDto;
 using LBT_Api.Other;
 using LBT_Api.Services;
@@ -48,7 +49,7 @@ namespace LBT_Api.Tests.Services
             _dbContext.Dispose();
         }
 
-        // CreateTests
+        // Create
         [Test]
         [Category("Create")]
         public void Create_DtoIsNull_ThrowArgumentNullException()
@@ -62,13 +63,13 @@ namespace LBT_Api.Tests.Services
 
         [Test]
         [Category("Create")]
-        public void Create_DtoHasMissingFields_ThrowBadRequestException()
+        public void Create_DtoHasMissingFields_ThrowInvalidModelException()
         {
             // Arrange
             CreateSupplierDto dto = new CreateSupplierDto();
 
             // Assert
-            Assert.Throws<BadRequestException>(() => _service.Create(dto));
+            Assert.Throws<InvalidModelException>(() => _service.Create(dto));
         }
 
         [Test]
@@ -95,7 +96,71 @@ namespace LBT_Api.Tests.Services
             Assert.That(howManyRecordsAfterOperation, Is.EqualTo(1));
         }
 
-        // DeleteTests
+        // CreateWithDependencies
+        [Test]
+        [Category("CreateWithDependencies")]
+        //[Ignore("Transaction are not supported in-memory databases")]
+        public void CreateWithDependencies_DtoIsNull_ThrowArgumenNullException()
+        {
+            Tools.IgnoreInMemoryDatabase();
+
+            // Arrange
+            CreateSupplierWithDependenciesDto dto = null;
+
+            // Assert
+            Assert.Throws<ArgumentNullException>(() => _service.CreateWithDependencies(dto));
+        }
+
+        [Test]
+        [Category("CreateWithDependencies")]
+        //[Ignore("Transaction are not supported in-memory databases")]
+        public void CreateWithDependencies_AddressInDtoIsNull_ThrowInvalidModelException()
+        {
+            Tools.IgnoreInMemoryDatabase();
+
+            // Arrange
+            CreateSupplierWithDependenciesDto dto = new CreateSupplierWithDependenciesDto
+            {
+                Name = "Name",
+                Address = null
+            };
+
+            // Assert
+            Assert.Throws<InvalidModelException>(() => _service.CreateWithDependencies(dto));
+        }
+
+        [Test]
+        [Category("CreateWithDependencies")]
+        //[Ignore("Transaction are not supported in-memory databases")]
+        public void CreateWithDependencies_DtoIsValid_ReturnDto()
+        {
+            Tools.IgnoreInMemoryDatabase();
+
+            // Arrange
+            CreateSupplierWithDependenciesDto dto = new CreateSupplierWithDependenciesDto
+            {
+                Name = "Name",
+                Address = new CreateAddressDto
+                {
+                    BuildingNumber = "BuildingNumber",
+                    City = "City",
+                    Country = "Country",
+                    Street = "Street",
+                },
+            };
+
+            // Act
+            var result = _service.CreateWithDependencies(dto);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.NotNull(result);
+                Assert.IsTrue(Tools.ModelIsValid(result));
+            });
+        }
+
+        // Delete
         [Test]
         [Category("Delete")]
         public void Delete_IdNotInDb_ThrowNotFoundException()
@@ -154,7 +219,38 @@ namespace LBT_Api.Tests.Services
             Assert.That(supplier.Id, Is.EqualTo(result.Id));
         }
 
-        // ReadAllTests
+        // ReadWithDependencies
+        [Test]
+        [Category("ReadWithDependencies")]
+        public void ReadWithDependencies_IdNotInDb_ThrowNotFoundException()
+        {
+            // Arrange
+            int searchedId = -1;
+
+            // Assert
+            Assert.Throws<NotFoundException>(() => _service.ReadWithDependencies(searchedId));
+        }
+
+        [Test]
+        [Category("ReadWithDependencies")]
+        public void ReadWithDependencies_IdNotInDb_ReturnGetCompanyWithDependenciesDto()
+        {
+            Supplier supplier = Tools.GetExampleSupplierWithDependencies(_dbContext);
+            _dbContext.Suppliers.Add(supplier);
+            _dbContext.SaveChanges();
+
+            // Act
+            GetSupplierWithDependenciesDto result = _service.ReadWithDependencies(supplier.Id);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.That(result, Is.Not.Null);
+                Assert.True(Tools.ModelIsValid(result));
+            });
+        }
+
+        // ReadAll
         [Test]
         [Category("ReadAll")]
         public void ReadAll_NoRecordsInDb_ReturnEmptyArray()
@@ -192,7 +288,51 @@ namespace LBT_Api.Tests.Services
             Assert.That(result.Length, Is.EqualTo(howManyRecordsInDb));
         }
 
-        // UpdateTests
+        // ReadAllWithDependencies
+        [Test]
+        [Category("ReadAllWithDependencies")]
+        public void ReadAllWithDependencies_NoRecordsInDb_ReturnEmptyArray()
+        {
+            // Arrange
+            int numberOfRecordsInDb = _dbContext.Addresses.ToArray().Length;
+
+            // Act
+            GetSupplierWithDependenciesDto[] result = _service.ReadAllWithDependencies();
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.Length, Is.EqualTo(numberOfRecordsInDb));
+                Assert.That(numberOfRecordsInDb, Is.Zero);
+            });
+        }
+
+        [Test]
+        [Category("ReadAllWithDependencies")]
+        [TestCase(3)]
+        public void ReadAllWithDependencies_RecordsInDb_ReturnDtoArray(int howManyToAdd)
+        {
+            // Arrange
+            for (int i = 0; i < howManyToAdd; i++)
+            {
+                Supplier supplier = Tools.GetExampleSupplierWithDependencies(_dbContext);
+                _dbContext.Suppliers.Add(supplier);
+            }
+            _dbContext.SaveChanges();
+            int howManyRecordsInDb = _dbContext.Suppliers.ToArray().Length;
+
+            // Act
+            GetSupplierWithDependenciesDto[] result = _service.ReadAllWithDependencies();
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.Length, Is.EqualTo(howManyToAdd));
+                Assert.That(result.Length, Is.EqualTo(howManyRecordsInDb));
+            });
+        }
+
+        // Update
         [Test]
         [Category("Update")]
         public void Update_DtoIsNull_ThrowArgumentNullException()
@@ -206,13 +346,13 @@ namespace LBT_Api.Tests.Services
 
         [Test]
         [Category("Update")]
-        public void Update_DtoIsMissingId_ThrowBadRequestException()
+        public void Update_DtoIsMissingId_ThrowInvalidModelException()
         {
             // Arrange
             UpdateSupplierDto dto = new UpdateSupplierDto();
 
             // Assert
-            Assert.Throws<BadRequestException>(() => _service.Update(dto));
+            Assert.Throws<InvalidModelException>(() => _service.Update(dto));
         }
 
         [Test]
@@ -241,7 +381,6 @@ namespace LBT_Api.Tests.Services
             UpdateSupplierDto dto = new UpdateSupplierDto()
             {
                 Id = supplier.Id,
-                AddressId = supplier.AddressId,
                 Name = supplier.Name + "Updated"
             };
 
@@ -250,7 +389,6 @@ namespace LBT_Api.Tests.Services
             GetSupplierDto supplierAsDto = new GetSupplierDto()
             {
                 Id = supplier.Id,
-                AddressId = supplier.AddressId,
                 Name = supplier.Name
             };
 

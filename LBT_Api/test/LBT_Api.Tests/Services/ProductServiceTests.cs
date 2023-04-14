@@ -15,12 +15,11 @@ namespace LBT_Api.Tests.Services
     /// <summary>
     /// Unit tests for ProductService implementation of IProductService interface
     /// </summary>
-    [TestFixture(Category = "UnitTest")]
+    [TestFixture]
     public class ProductServiceTests
     {
         private LBT_DbContext _dbContext;
         private IProductService _service;
-        private const bool IN_MEMORY_DB = true;
 
         [SetUp]
         public void SetUp()
@@ -46,12 +45,6 @@ namespace LBT_Api.Tests.Services
         public void TearDown()
         {
             _dbContext.Dispose();
-        }
-
-        public void IgnoreInMemoryDatabase()
-        {
-            if (IN_MEMORY_DB == true)
-                Assert.Ignore("Transaction are not supported in in-memory databases");
         }
 
         // Create
@@ -108,7 +101,7 @@ namespace LBT_Api.Tests.Services
         //[Ignore("Transaction are not supported in-memory databases")]
         public void CreateWithDependencies_DtoIsNull_ThrowArgumentNullException()
         {
-            IgnoreInMemoryDatabase();
+            Tools.IgnoreInMemoryDatabase();
 
             // Arrange
             CreateProductWithDependenciesDto dto = null;
@@ -122,7 +115,7 @@ namespace LBT_Api.Tests.Services
         //[Ignore("Transaction are not supported in-memory databases")]
         public void CreateWithDependencies_SupplierInDtoIsNull_ThrowInvalidModelException()
         {
-            IgnoreInMemoryDatabase();
+            Tools.IgnoreInMemoryDatabase();
 
             // Arrange
             CreateProductWithDependenciesDto dto = new CreateProductWithDependenciesDto()
@@ -141,7 +134,7 @@ namespace LBT_Api.Tests.Services
         //[Ignore("Transaction are not supported in-memory databases")]
         public void CreateWithDependencies_DtoModelIsInvalid_ThrowInvalidModelException()
         {
-            IgnoreInMemoryDatabase();
+            Tools.IgnoreInMemoryDatabase();
 
             // Arrange
             CreateProductWithDependenciesDto dto = new CreateProductWithDependenciesDto()
@@ -170,7 +163,7 @@ namespace LBT_Api.Tests.Services
         //[Ignore("Transaction are not supported in-memory databases")]
         public void CreateWithDependencies_DtoIsValid_ReturnDto()
         {
-            IgnoreInMemoryDatabase();
+            Tools.IgnoreInMemoryDatabase();
 
             // Arrange
             CreateProductWithDependenciesDto dto = new CreateProductWithDependenciesDto()
