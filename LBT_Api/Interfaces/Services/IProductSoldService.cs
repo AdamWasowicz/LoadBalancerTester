@@ -1,13 +1,17 @@
-﻿using LBT_Api.Models.ProductSoldDto;
+﻿using LBT_Api.Models.ProductDto;
+using LBT_Api.Models.ProductSoldDto;
 
 namespace LBT_Api.Interfaces.Services
 {
     public interface IProductSoldService
     {
-        GetProductSoldDto Create(CreateProductSoldDto dto);
+        public GetProductSoldDto Create(CreateProductSoldDto dto);
+        public GetProductSoldWithDependenciesDto CreateWithDependencies(CreateProductSoldWithDependenciesDto dto);
         public int Delete(int id);
         public GetProductSoldDto Read(int id);
+        public GetProductSoldWithDependenciesDto ReadWithDependencies(int id);
         public GetProductSoldDto[] ReadAll();
-        public GetProductSoldDto Update(UpdateProductSoldDto dto);
+        public GetProductSoldWithDependenciesDto[] ReadAllWithDependencies();
+        public GetProductSoldDto Update(UpdateProductSoldPrice dto);
     }
 }

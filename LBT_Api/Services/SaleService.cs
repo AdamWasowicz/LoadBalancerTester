@@ -98,6 +98,11 @@ namespace LBT_Api.Services
 
         }
 
+        public GetSaleWithDependenciesDto CreateWithDependencies(CreateSaleWithDependenciesDto dto)
+        {
+            throw new NotImplementedException();
+        }
+
         public int Delete(int id)
         {
             // Check if record exists
@@ -136,12 +141,22 @@ namespace LBT_Api.Services
             return outputDto;
         }
 
+        public GetSaleWithDependenciesDto ReadWithDependencies(int id)
+        {
+            throw new NotImplementedException();
+        }
+
         public GetSaleDto[] ReadAll()
         {
             Sale[] sales = _dbContext.Sales.ToArray();
             GetSaleDto[] saleDtos = _mapper.Map<GetSaleDto[]>(sales);
 
             return saleDtos;
+        }
+
+        public GetSaleWithDependenciesDto[] ReadAllWithDependencies()
+        {
+            throw new NotImplementedException();
         }
 
         public GetSaleDto Update(UpdateSaleDto dto)

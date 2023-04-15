@@ -2,15 +2,15 @@
 
 namespace LBT_Api.Models.ProductSoldDto
 {
-    public class UpdateProductSoldDto
+    public class UpdateProductSoldPrice
     {
         [Required]
         public int? Id { get; set; }
 
+        
         // Optional
-        public int? SaleId { get; set; }
-        public int? ProductId { get; set; }
         public int? AmountSold { get; set; }
+        
         public double? PriceAtTheTimeOfSale { get; set; }
     }
 }

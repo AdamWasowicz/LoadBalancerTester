@@ -203,7 +203,7 @@ namespace LBT_Api.Tests
             dbContext.Sales.Add(sale);
             dbContext.SaveChanges();
 
-            ProductSold ps = new ProductSold()
+            ProductSold ps = new ProductSold
             {
                 AmountSold = 1,
                 PriceAtTheTimeOfSale = product.PriceNow,

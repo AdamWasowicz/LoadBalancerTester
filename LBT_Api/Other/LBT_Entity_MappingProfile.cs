@@ -44,13 +44,18 @@ namespace LBT_Api.Other
             CreateMap<ProductSold, GetProductSoldDto>();
             CreateMap<CreateProductSoldDto, ProductSold>();
             CreateMap<CreateProductSold_IntegratedDto, ProductSold>();
-            CreateMap<UpdateProductSoldDto, ProductSold>();
-            CreateMap<UpdateProductSoldDto, GetProductSoldDto>();
+            CreateMap<UpdateProductSoldPrice, ProductSold>();
+            CreateMap<UpdateProductSoldPrice, GetProductSoldDto>();
+            CreateMap<ProductSold, GetProductSoldWithDependenciesDto>()
+                .ForMember(dest => dest.Product, opt => opt.MapFrom(src => src.Product))
+                .ForMember(dest => dest.Sale, opt => opt.MapFrom(src => src.Sale));
 
             // Sale
             CreateMap<Sale, GetSaleDto>();
             CreateMap<CreateSaleDto, Sale>();
             CreateMap<UpdateSaleDto, Sale>();
+            CreateMap<Sale, GetSaleWithDependenciesDto>()
+                .ForMember(dest => dest.Worker, opt => opt.MapFrom(src => src.Worker));
 
             // Supplier
             CreateMap<Supplier, GetSupplierDto>();

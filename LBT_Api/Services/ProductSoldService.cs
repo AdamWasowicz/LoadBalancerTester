@@ -2,9 +2,11 @@
 using LBT_Api.Entities;
 using LBT_Api.Exceptions;
 using LBT_Api.Interfaces.Services;
+using LBT_Api.Models.ProductDto;
 using LBT_Api.Models.ProductSoldDto;
 using LBT_Api.Other;
 using System.Net;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace LBT_Api.Services
 {
@@ -12,23 +14,26 @@ namespace LBT_Api.Services
     {
         private readonly LBT_DbContext _dbContext;
         private readonly IMapper _mapper;
+        private readonly IProductService _productService;
+        private readonly ISaleService _saleService;
 
-        public ProductSoldService(LBT_DbContext dbContext, IMapper mapper)
+        public ProductSoldService(
+            LBT_DbContext dbContext, 
+            IMapper mapper, 
+            IProductService productService,
+            ISaleService saleService)
         {
             _dbContext = dbContext;
             _mapper = mapper;
+            _productService = productService;
+            _saleService = saleService;
         }
 
         public GetProductSoldDto Create(CreateProductSoldDto dto)
         {
             // Check dto
-            if (dto == null)
-                throw new ArgumentNullException(nameof(dto));
-
-            // Check dto fields
-            bool dtoIsValid = Tools.AllStringPropsAreNotNull(dto);
-            if (dtoIsValid == false || dto.SaleId == null || dto.ProductId == null)
-                throw new BadRequestException("Dto is missing fields");
+            if (Tools.ModelIsValid(dto) == false)
+                throw new InvalidModelException();
 
             // Check if dependencies exist
             Sale? sale = _dbContext.Sales.FirstOrDefault(s => s.Id == dto.SaleId);
@@ -44,8 +49,6 @@ namespace LBT_Api.Services
             try
             {
                 _dbContext.ProductsSold.Add(ps);
-                _dbContext.SaveChanges();
-
                 sale.SumValue = _dbContext.ProductsSold.Sum(ps => ps.PriceAtTheTimeOfSale * ps.AmountSold);
                 _dbContext.SaveChanges();
             }
@@ -55,6 +58,46 @@ namespace LBT_Api.Services
             }
 
             GetProductSoldDto outputDto = _mapper.Map<GetProductSoldDto>(ps);
+
+            return outputDto;
+        }
+
+        public GetProductSoldWithDependenciesDto CreateWithDependencies(CreateProductSoldWithDependenciesDto dto)
+        {
+            // Check dto
+            if (Tools.ModelIsValid(dto) == false)
+                throw new InvalidModelException("Model is invalid");
+
+            var transaction = _dbContext.Database.BeginTransaction();
+            ProductSold ps = null;
+
+            try
+            {
+                // Dependencies
+                var product = _productService.CreateWithDependencies(dto.Product);
+                var Sale = _saleService.CreateWithDependencies(dto.Sale);
+
+                // Main
+                ps = new ProductSold
+                {
+                    ProductId = product.Id,
+                    SaleId = Sale.Id,
+                    AmountSold = dto.AmountSold,
+                    PriceAtTheTimeOfSale = product.PriceNow
+                };
+
+                // Save changes
+                _dbContext.SaveChanges();
+                transaction.Commit();
+            }
+            catch (Exception exception)
+            {
+                transaction.Rollback();
+                throw new DatabaseOperationFailedException(exception.Message);
+            }
+
+            // Return dto
+            GetProductSoldWithDependenciesDto outputDto = _mapper.Map<GetProductSoldWithDependenciesDto>(ps);
 
             return outputDto;
         }
@@ -93,6 +136,17 @@ namespace LBT_Api.Services
             return outputDto;
         }
 
+        public GetProductSoldWithDependenciesDto ReadWithDependencies(int id)
+        {
+            ProductSold? ps = _dbContext.ProductsSold.FirstOrDefault(ps => ps.Id == id);
+            if (ps == null)
+                throw new NotFoundException("ProductSold with Id: " + id);
+
+            GetProductSoldWithDependenciesDto outputDto = _mapper.Map<GetProductSoldWithDependenciesDto>(ps);
+
+            return outputDto;
+        }
+
         public GetProductSoldDto[] ReadAll()
         {
             ProductSold[] productsSold = _dbContext.ProductsSold.ToArray();
@@ -101,29 +155,35 @@ namespace LBT_Api.Services
             return outputDto;
         }
 
-        public GetProductSoldDto Update(UpdateProductSoldDto dto)
+        public GetProductSoldWithDependenciesDto[] ReadAllWithDependencies()
+        {
+            ProductSold[] pss = _dbContext.ProductsSold.ToArray();
+            GetProductSoldWithDependenciesDto[] outputDto = _mapper.Map<GetProductSoldWithDependenciesDto[]>(pss);
+
+            return outputDto;
+        }
+
+        public GetProductSoldDto Update(UpdateProductSoldPrice dto)
         {
             // Check dto
-            if (dto == null)
-                throw new ArgumentNullException(nameof(dto));
-
-            if (dto.Id == null)
-                throw new BadRequestException("Dto is missing Id field");
+            if (Tools.ModelIsValid(dto) == false)
+                throw new InvalidModelException("Model is invalid");
 
             ProductSold? ps = _dbContext.ProductsSold.FirstOrDefault(ps => ps.Id == dto.Id);
             if (ps == null)
                 throw new NotFoundException("ProductSold with Id: " + dto.Id);
 
-            Product? product = _dbContext.Products.FirstOrDefault(p => p.Id == dto.ProductId);
-            if (product == null)
-                throw new NotFoundException("Product with Id: " + dto.Id);
-
-            Sale? sale = _dbContext.Sales.FirstOrDefault(s => s.Id == dto.SaleId);
+            Sale? sale = _dbContext.Sales.First(sale => sale.Id == ps.SaleId);
             if (sale == null)
-                throw new NotFoundException("Sale with Id: " + dto.Id);
+                throw new NotFoundException("Sale with Id: " + ps.SaleId);
 
             ProductSold mappedFromDto = _mapper.Map<ProductSold>(dto);
-            ps = Tools.UpdateObjectProperties(ps, mappedFromDto);
+            ps.AmountSold = dto.AmountSold == null 
+                ? ps.AmountSold 
+                : (int)dto.AmountSold;
+            ps.PriceAtTheTimeOfSale = dto.PriceAtTheTimeOfSale == null 
+                ? ps.PriceAtTheTimeOfSale 
+                : (int)dto.PriceAtTheTimeOfSale;
 
             // Save changes
             try
