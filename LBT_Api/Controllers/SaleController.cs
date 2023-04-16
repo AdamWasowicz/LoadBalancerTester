@@ -22,6 +22,13 @@ namespace LBT_Api.Controllers
             return Created(result.Id.ToString(), result);
         }
 
+        [HttpPost("full")]
+        public ActionResult<GetSaleWithDependenciesDto> CreateWithDependencies([FromBody] CreateSaleWithDependenciesDto dto)
+        {
+            var result = _saleService.CreateWithDependencies(dto);
+            return Created(result.Id.ToString(), result);
+        }
+
         [HttpDelete("{id}")]
         public ActionResult Delete([FromRoute] int id)
         {
@@ -36,10 +43,24 @@ namespace LBT_Api.Controllers
             return Ok(result);
         }
 
+        [HttpGet("full")]
+        public ActionResult<GetSaleWithDependenciesDto[]> GetAllWithDependencies()
+        {
+            var result = _saleService.ReadAllWithDependencies();
+            return Ok(result);
+        }
+
         [HttpGet("{id}")]
         public ActionResult<GetSaleDto> Read([FromRoute] int id)
         {
             var result = _saleService.Read(id);
+            return Ok(result);
+        }
+
+        [HttpGet("full/{id}")]
+        public ActionResult<GetSaleWithDependenciesDto> ReadWithDependencies([FromRoute] int id)
+        {
+            var result = _saleService.ReadWithDependencies(id);
             return Ok(result);
         }
 

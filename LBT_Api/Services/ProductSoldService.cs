@@ -75,13 +75,13 @@ namespace LBT_Api.Services
             {
                 // Dependencies
                 var product = _productService.CreateWithDependencies(dto.Product);
-                var Sale = _saleService.CreateWithDependencies(dto.Sale);
+                var sale = _saleService.CreateWithDependencies(dto.Sale);
 
                 // Main
                 ps = new ProductSold
                 {
                     ProductId = product.Id,
-                    SaleId = Sale.Id,
+                    SaleId = sale.Id,
                     AmountSold = dto.AmountSold,
                     PriceAtTheTimeOfSale = product.PriceNow
                 };

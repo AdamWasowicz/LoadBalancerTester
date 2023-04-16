@@ -12,25 +12,23 @@ namespace LBT_Api.Services
     {
         private readonly LBT_DbContext _dbContext;
         private readonly IMapper _mapper;
+        private readonly IWorkerService _workerService;
 
-        public SaleService(LBT_DbContext dbContext, IMapper mapper)
+        public SaleService(
+            LBT_DbContext dbContext, 
+            IMapper mapper, 
+            IWorkerService workerService)
         {
             _dbContext = dbContext;
             _mapper = mapper;
+            _workerService = workerService;
         }
 
         public GetSaleDto Create(CreateSaleDto dto)
         {
             // Check dto
-            if (dto == null)
-                throw new ArgumentNullException(nameof(dto));
-
-            bool dtoIsValid = Tools.AllStringPropsAreNotNull(dto);
-            if (dtoIsValid == false)
-                throw new BadRequestException("Dto is missing fields");
-
-            if (dto.WorkerId == null)
-                throw new BadRequestException("Dto is missing fields");
+            if (Tools.ModelIsValid(dto) == false)
+                throw new InvalidModelException();
 
             bool workerExists = _dbContext.Workers.Where(w => w.Id == dto.WorkerId).Any();
             if (workerExists == false)
@@ -44,63 +42,55 @@ namespace LBT_Api.Services
                 SumValue = 0,
             };
 
-            var transaction = _dbContext.Database.BeginTransaction();
-            try
-            {
+            _dbContext.Sales.Add(sale);
+            _dbContext.SaveChanges();
 
-                _dbContext.Sales.Add(sale);
-                _dbContext.SaveChanges();
-
-                // Create sold products rows
-                foreach (var psdto in dto.ProductsSold)
-                {
-                    double? priceAtTheTimeOfSale = 0;
-                    try
-                    {
-                        priceAtTheTimeOfSale = _dbContext.Products.FirstOrDefault(p => p.Id == psdto.ProductId).PriceNow;
-                    }
-                    catch (Exception exception)
-                    {
-                        throw new DatabaseOperationFailedException(exception.Message);
-                    }
-
-                    if (priceAtTheTimeOfSale == null)
-                        throw new NotFoundException("Product with Id: " + psdto.ProductId);
-
-                    ProductSold productSold = new ProductSold()
-                    {
-                        AmountSold = psdto.AmountSold,
-                        PriceAtTheTimeOfSale = (double)priceAtTheTimeOfSale,
-                        ProductId = psdto.ProductId,
-                        SaleId = sale.Id,
-                    };
-
-                    _dbContext.ProductsSold.Add(productSold);
-                    _dbContext.SaveChanges();
-                }
-
-                ProductSold[] productSoldInSale = _dbContext.ProductsSold.Where(ps => ps.SaleId == sale.Id).ToArray();
-                double sumValue = productSoldInSale.Sum(ps => ps.PriceAtTheTimeOfSale * ps.AmountSold);
-
-                sale.SumValue = sumValue;
-                _dbContext.SaveChanges();
-            }
-            catch
-            {
-                transaction.Rollback();
-                throw;
-            }
-
-            transaction.Commit();
+            // Return dto
             GetSaleDto outputDto = _mapper.Map<GetSaleDto>(sale);
 
             return outputDto;
-
         }
 
         public GetSaleWithDependenciesDto CreateWithDependencies(CreateSaleWithDependenciesDto dto)
         {
-            throw new NotImplementedException();
+            // Check dto
+            if (Tools.ModelIsValid(dto) == false)
+                throw new InvalidModelException("Model is invalid");
+
+            var transaction = _dbContext.Database.BeginTransaction();
+            Sale sale = null;
+
+            try
+            {
+                // Dependencies
+                int workerId = _workerService.CreateWithDependencies(dto.Worker).Id;
+
+                // Main
+                sale = new Sale
+                {
+                    SaleDate = DateTime.Now,
+                    WorkerId = workerId,
+                    SumValue = 0,
+                };
+
+                // Save changes
+                _dbContext.Sales.Add(sale);
+                _dbContext.SaveChanges();
+                transaction.Commit();
+
+            }
+            catch (Exception exception)
+            {
+                transaction.Rollback();
+                throw new DatabaseOperationFailedException(exception.Message);
+            }
+
+            // Return dto
+            GetSaleWithDependenciesDto outputDto = _mapper.Map<GetSaleWithDependenciesDto>(sale);
+
+            return outputDto;
+
+
         }
 
         public int Delete(int id)
@@ -143,7 +133,15 @@ namespace LBT_Api.Services
 
         public GetSaleWithDependenciesDto ReadWithDependencies(int id)
         {
-            throw new NotImplementedException();
+            // Check if record exists
+            Sale? sale = _dbContext.Sales.FirstOrDefault(a => a.Id == id);
+            if (sale == null)
+                throw new NotFoundException("Sale with Id: " + id);
+
+            // Return dto
+            GetSaleWithDependenciesDto outputDto = _mapper.Map<GetSaleWithDependenciesDto>(sale);
+
+            return outputDto;
         }
 
         public GetSaleDto[] ReadAll()
@@ -156,7 +154,10 @@ namespace LBT_Api.Services
 
         public GetSaleWithDependenciesDto[] ReadAllWithDependencies()
         {
-            throw new NotImplementedException();
+            Sale[] sales = _dbContext.Sales.ToArray();
+            GetSaleWithDependenciesDto[] saleDtos = _mapper.Map<GetSaleWithDependenciesDto[]>(sales);
+
+            return saleDtos;
         }
 
         public GetSaleDto Update(UpdateSaleDto dto)

@@ -48,7 +48,9 @@ namespace LBT_Api.Tests.Services
             // Dependencies
             ISupplierService supplierService = new SupplierService(_dbContext, mapper);
             IProductService productService = new ProductService(_dbContext, mapper, supplierService);
-            ISaleService saleService = new SaleService(_dbContext, mapper);
+            ICompanyService companyService = new CompanyService(_dbContext, mapper);
+            IWorkerService workerService = new WorkerService(_dbContext, mapper, companyService);
+            ISaleService saleService = new SaleService(_dbContext, mapper, workerService);
 
             // Service
             _service = new ProductSoldService(_dbContext, mapper, productService, saleService);

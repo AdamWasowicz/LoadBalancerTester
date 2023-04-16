@@ -7,8 +7,5 @@ namespace LBT_Api.Models.SaleDto
     {
         [Required]
         public int? WorkerId { get; set; }
-
-        [Required]
-        public CreateProductSold_IntegratedDto[] ProductsSold { get; set; }
     }
 }

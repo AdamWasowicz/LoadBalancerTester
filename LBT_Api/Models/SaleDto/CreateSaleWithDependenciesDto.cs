@@ -6,10 +6,6 @@ namespace LBT_Api.Models.SaleDto
 {
     public class CreateSaleWithDependenciesDto
     {
-        // Props
-        [Required]
-        public CreateProductSold_IntegratedDto ProductsSold { get; set; }
-
         // Dependencies
         [Required]
         public CreateWorkerWithDependenciesDto Worker { get; set; }
