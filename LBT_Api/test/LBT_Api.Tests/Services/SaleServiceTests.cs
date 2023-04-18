@@ -57,7 +57,7 @@ namespace LBT_Api.Tests.Services
             _dbContext.Dispose();
         }
 
-        // CreateTests
+        // Create
         [Test]
         [Category("Create")]
         public void Create_DtoIsNull_ThrowArgumentNullException()
@@ -85,11 +85,9 @@ namespace LBT_Api.Tests.Services
         public void Create_DtoIsValid_ReturnDto()
         {
             // Arrange
-            // Worker
             Worker worker = Tools.GetExampleWorkerWithDependencies(_dbContext);
             _dbContext.Workers.Add(worker);
 
-            // Product
             Product product = Tools.GetExampleProductWithDependencies(_dbContext);
             _dbContext.Products.Add(product);
             _dbContext.SaveChanges();
@@ -99,16 +97,19 @@ namespace LBT_Api.Tests.Services
                 WorkerId = worker.Id,
             };
 
-            // Act
             int amountOfRowsBeforeAction = _dbContext.Sales.Count();
+
+            // Act
             GetSaleDto result = _service.Create(dto);
-            int amountOfRowsAfterAction = _dbContext.Sales.Count();
-
-
 
             // Assert
-            Assert.Greater(amountOfRowsAfterAction, amountOfRowsBeforeAction);
-            Assert.That(result.SumValue, Is.EqualTo(0));
+            int amountOfRowsAfterAction = _dbContext.Sales.Count();
+
+            Assert.Multiple(() =>
+            {
+                Assert.Greater(amountOfRowsAfterAction, amountOfRowsBeforeAction);
+                Assert.That(result.SumValue, Is.EqualTo(0));
+            });
         }
 
         // CreateWithDependencies
@@ -196,7 +197,7 @@ namespace LBT_Api.Tests.Services
             });
         }
 
-        // DeleteTests
+        // Delete
         [Test]
         [Category("Delete")]
         public void Delete_IdNotInDb_ThrowNotFoundException()
@@ -211,7 +212,7 @@ namespace LBT_Api.Tests.Services
         [Test]
         [Category("Delete")]
         //[Ignore("Transaction are not supported in-memory databases")]
-        public void Delete_IdInDb_ReturnZero()
+        public void Delete_IdInDb_Return()
         {
             Tools.IgnoreInMemoryDatabase();
 
@@ -220,16 +221,22 @@ namespace LBT_Api.Tests.Services
             _dbContext.Sales.Add(sale);
             _dbContext.SaveChanges();
 
+            int numberOfRecordsBeforeOperation = _dbContext.Sales.Count();
+
             // Act
-            int result = _service.Delete(sale.Id);
-            int numberOfRecordsAfterOperation = _dbContext.Addresses.ToArray().Length;
+            _service.Delete(sale.Id);
 
             // Assert
-            Assert.That(result, Is.EqualTo(0));
-            Assert.That(numberOfRecordsAfterOperation, Is.EqualTo(0));
+            int numberOfRecordsAfterOperation = _dbContext.Addresses.Count();
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(numberOfRecordsAfterOperation, Is.EqualTo(0));
+                Assert.Greater(numberOfRecordsBeforeOperation, numberOfRecordsAfterOperation);
+            });
         }
 
-        // ReadTests
+        // Read
         [Test]
         [Category("Read")]
         public void Read_IdNotInDb_ThrowNotFoundException()
@@ -289,7 +296,7 @@ namespace LBT_Api.Tests.Services
             });
         }
 
-        // ReadAllTests
+        // ReadAll
         [Test]
         [Category("ReadAll")]
         public void ReadAll_NoRecordsInDb_ReturnEmptyArray()
@@ -301,8 +308,11 @@ namespace LBT_Api.Tests.Services
             GetSaleDto[] result = _service.ReadAll();
 
             // Assert
-            Assert.That(result.Length, Is.EqualTo(numberOfRecordsInDb));
-            Assert.That(result.Length, Is.EqualTo(0));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.Length, Is.EqualTo(numberOfRecordsInDb));
+                Assert.That(result.Length, Is.EqualTo(0));
+            });
         }
 
         [Test]
@@ -315,16 +325,19 @@ namespace LBT_Api.Tests.Services
             {
                 Sale sale = Tools.GetExampleSaleWithDependencies(_dbContext);
                 _dbContext.Sales.Add(sale);
-                _dbContext.SaveChanges();
             }
+            _dbContext.SaveChanges();
             int howManyRecordsInDb = _dbContext.Sales.ToArray().Length;
 
             // Act
             GetSaleDto[] result = _service.ReadAll();
 
             // Assert
-            Assert.That(result.Length, Is.EqualTo(howManyToAdd));
-            Assert.That(result.Length, Is.EqualTo(howManyRecordsInDb));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.Length, Is.EqualTo(howManyToAdd));
+                Assert.That(result.Length, Is.EqualTo(howManyRecordsInDb));
+            });
         }
 
         // ReadAllWithDependencies
@@ -385,13 +398,13 @@ namespace LBT_Api.Tests.Services
 
         [Test]
         [Category("Update")]
-        public void Update_DtoIsMissingId_ThrowBadRequestException()
+        public void Update_DtoIsMissingId_ThrowInvalidModelException()
         {
             // Arrange
             UpdateSaleDto dto = new UpdateSaleDto();
 
             // Assert
-            Assert.Throws<BadRequestException>(() => _service.Update(dto));
+            Assert.Throws<InvalidModelException>(() => _service.Update(dto));
         }
 
         [Test]

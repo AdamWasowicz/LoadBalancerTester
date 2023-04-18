@@ -77,11 +77,9 @@ namespace LBT_Api.Tests.Services
             // Arrange
             Company company = Tools.GetExampleCompanyWithDependecies(_dbContext);
             _dbContext.Companys.Add(company);
-            _dbContext.SaveChanges();
 
             Address address = Tools.GetExampleAddress();
             _dbContext.Addresses.Add(address);
-            _dbContext.SaveChanges();
 
             ContactInfo ci = Tools.GetExampleContactInfo();
             _dbContext.ContactInfos.Add(ci);
@@ -200,7 +198,7 @@ namespace LBT_Api.Tests.Services
 
         [Test]
         [Category("Delete")]
-        public void Delete_IdInDb_ReturnZero()
+        public void Delete_IdInDb_Return()
         {
             // Arrange
             Worker worker = Tools.GetExampleWorkerWithDependencies(_dbContext);
@@ -210,14 +208,16 @@ namespace LBT_Api.Tests.Services
             int numberOfRecordsBeforeOperation = _dbContext.Workers.Count();
 
             // Act
-            var result = _service.Delete(worker.Id);
+            _service.Delete(worker.Id);
 
             //Assert
             int numberOfRecordsAfterOperation = _dbContext.Workers.Count();
 
-            Assert.That(result, Is.EqualTo(0));
-            Assert.That(numberOfRecordsAfterOperation, Is.EqualTo(0));
-            Assert.That(numberOfRecordsBeforeOperation, Is.GreaterThan(numberOfRecordsAfterOperation));
+            Assert.Multiple(() =>
+            {
+                Assert.That(numberOfRecordsAfterOperation, Is.EqualTo(0));
+                Assert.That(numberOfRecordsBeforeOperation, Is.GreaterThan(numberOfRecordsAfterOperation));
+            });
         }
 
         // Read
@@ -245,8 +245,11 @@ namespace LBT_Api.Tests.Services
             GetWorkerDto result = _service.Read(worker.Id);
 
             // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.That(worker.Id, Is.EqualTo(result.Id));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result, Is.Not.Null);
+                Assert.That(worker.Id, Is.EqualTo(result.Id));
+            });
         }
 
         // ReadWithDependencies
@@ -293,8 +296,11 @@ namespace LBT_Api.Tests.Services
             GetWorkerDto[] result = _service.ReadAll();
 
             // Assert
-            Assert.That(result.Length, Is.EqualTo(numberOfRecordsInDb));
-            Assert.That(result.Length, Is.EqualTo(0));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.Length, Is.EqualTo(numberOfRecordsInDb));
+                Assert.That(result.Length, Is.EqualTo(0));
+            });
         }
 
         [Test]
@@ -315,8 +321,11 @@ namespace LBT_Api.Tests.Services
             GetWorkerDto[] result = _service.ReadAll();
 
             // Assert
-            Assert.That(result.Length, Is.EqualTo(howManyToAdd));
-            Assert.That(result.Length, Is.EqualTo(howManyRecordsInDb));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.Length, Is.EqualTo(howManyToAdd));
+                Assert.That(result.Length, Is.EqualTo(howManyRecordsInDb));
+            });
         }
 
         // ReadAllWithDependencies
@@ -376,13 +385,13 @@ namespace LBT_Api.Tests.Services
 
         [Test]
         [Category("Update")]
-        public void Update_DtoIsMissingId_ThrowBadRequestException()
+        public void Update_DtoIsMissingId_ThrowInvalidModelException()
         {
             // Arrange
             UpdateWorkerDto dto = new UpdateWorkerDto();
 
             // Assert
-            Assert.Throws<BadRequestException>(() => _service.Update(dto));
+            Assert.Throws<InvalidModelException>(() => _service.Update(dto));
         }
 
         [Test]
@@ -419,8 +428,11 @@ namespace LBT_Api.Tests.Services
             GetWorkerDto result = _service.Update(dto);
 
             // Assert
-            Assert.That(result.Name, Is.EqualTo(dto.Name));
-            Assert.That(result.Surname, Is.EqualTo(dto.Surname));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.Name, Is.EqualTo(dto.Name));
+                Assert.That(result.Surname, Is.EqualTo(dto.Surname));
+            });
         }
     }
 }

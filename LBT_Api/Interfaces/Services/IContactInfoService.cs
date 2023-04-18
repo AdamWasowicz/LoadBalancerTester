@@ -5,7 +5,7 @@ namespace LBT_Api.Interfaces.Services
     public interface IContactInfoService
     {
         GetContactInfoDto Create(CreateContactInfoDto dto);
-        public int Delete(int id);
+        public void Delete(int id);
         public GetContactInfoDto Read(int id);
         public GetContactInfoDto[] ReadAll();
         public GetContactInfoDto Update(UpdateContactInfoDto dto);

@@ -3,17 +3,11 @@ using LBT_Api.Entities;
 using LBT_Api.Exceptions;
 using LBT_Api.Interfaces.Services;
 using LBT_Api.Models.AddressDto;
-using LBT_Api.Models.CompanyDto;
 using LBT_Api.Models.SupplierDto;
 using LBT_Api.Other;
 using LBT_Api.Services;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace LBT_Api.Tests.Services
 {
@@ -87,13 +81,20 @@ namespace LBT_Api.Tests.Services
                 AddressId = address.Id
             };
 
+            int howmanyRecordsBeforeOperation = _dbContext.Suppliers.Count();
+
             // Act
             GetSupplierDto result = _service.Create(dto);
-            int howManyRecordsAfterOperation = _dbContext.Suppliers.ToArray().Length;
 
             // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.That(howManyRecordsAfterOperation, Is.EqualTo(1));
+            int howManyRecordsAfterOperation = _dbContext.Suppliers.Count();
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(result, Is.Not.Null);
+                Assert.That(howManyRecordsAfterOperation, Is.EqualTo(1));
+                Assert.Greater(howManyRecordsAfterOperation, howmanyRecordsBeforeOperation);
+            });
         }
 
         // CreateWithDependencies
@@ -174,20 +175,26 @@ namespace LBT_Api.Tests.Services
 
         [Test]
         [Category("Delete")]
-        public void Delete_IdInDb_ReturnZero()
+        public void Delete_IdInDb_Return()
         {
             // Arrange
             Supplier supplier = Tools.GetExampleSupplierWithDependencies(_dbContext);
             _dbContext.Suppliers.Add(supplier);
             _dbContext.SaveChanges();
 
+            int numberOfRecordsBeforeOperation = _dbContext.Suppliers.Count();
+
             // Act
-            int result = _service.Delete(supplier.Id);
-            int numberOfRecordsAfterOperation = _dbContext.Suppliers.ToArray().Length;
+            _service.Delete(supplier.Id);
 
             // Assert
-            Assert.That(result, Is.EqualTo(0));
-            Assert.That(numberOfRecordsAfterOperation, Is.EqualTo(0));
+            int numberOfRecordsAfterOperation = _dbContext.Suppliers.Count();
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(numberOfRecordsAfterOperation, Is.EqualTo(0));
+                Assert.Greater(numberOfRecordsBeforeOperation, numberOfRecordsAfterOperation);
+            });
         }
 
         // ReadTests
@@ -215,8 +222,11 @@ namespace LBT_Api.Tests.Services
             GetSupplierDto result  = _service.Read(supplier.Id);
 
             // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.That(supplier.Id, Is.EqualTo(result.Id));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result, Is.Not.Null);
+                Assert.That(supplier.Id, Is.EqualTo(result.Id));
+            });
         }
 
         // ReadWithDependencies
@@ -262,8 +272,11 @@ namespace LBT_Api.Tests.Services
             GetSupplierDto[] result = _service.ReadAll();
 
             // Assert
-            Assert.That(result.Length, Is.EqualTo(numberOfRecordsInDb));
-            Assert.That(result.Length, Is.EqualTo(0));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.Length, Is.EqualTo(numberOfRecordsInDb));
+                Assert.That(result.Length, Is.EqualTo(0));
+            });
         }
 
         [Test]
@@ -284,8 +297,11 @@ namespace LBT_Api.Tests.Services
             GetSupplierDto[] result = _service.ReadAll();
 
             // Assert
-            Assert.That(result.Length, Is.EqualTo(howManyToAdd));
-            Assert.That(result.Length, Is.EqualTo(howManyRecordsInDb));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.Length, Is.EqualTo(howManyToAdd));
+                Assert.That(result.Length, Is.EqualTo(howManyRecordsInDb));
+            });
         }
 
         // ReadAllWithDependencies

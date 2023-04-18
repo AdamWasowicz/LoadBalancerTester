@@ -109,12 +109,15 @@ namespace LBT_Api.Tests.Services
             GetProductSoldDto result = _service.Create(dto);
 
             // Assert
-            double saleSumValue = _dbContext.Sales.FirstOrDefault(s => s.Id == sale.Id).SumValue;
+            double saleSumValue = _dbContext.Sales.FirstOrDefault(s => s.Id == sale.Id)!.SumValue;
             double expectedSumValue = _dbContext.ProductsSold.Where(ps => ps.SaleId == sale.Id).Sum(ps => ps.AmountSold * ps.PriceAtTheTimeOfSale);
             int amountOfRowsInDb = _dbContext.ProductsSold.Count();
 
-            Assert.That(saleSumValue, Is.EqualTo(expectedSumValue));
-            Assert.That(amountOfRowsInDb, Is.EqualTo(1));
+            Assert.Multiple(() =>
+            {
+                Assert.That(saleSumValue, Is.EqualTo(expectedSumValue));
+                Assert.That(amountOfRowsInDb, Is.EqualTo(1));
+            });
         }
 
         // CreateWithDependencies
@@ -241,20 +244,26 @@ namespace LBT_Api.Tests.Services
 
         [Test]
         [Category("Delete")]
-        public void Delete_IdInDb_ReturnZero()
+        public void Delete_IdInDb_Return()
         {
             // Arrange
             ProductSold ps = Tools.GetExampleProductSoldWithDependencies(_dbContext);
             _dbContext.ProductsSold.Add(ps);
             _dbContext.SaveChanges();
 
+            int numberOfRecordsBeforeOperation = _dbContext.ProductsSold.Count();
+
             // Act
-            int result = _service.Delete(ps.Id);
-            int numberOfRecordsAfterOperation = _dbContext.ProductsSold.ToArray().Length;
+            _service.Delete(ps.Id);
 
             // Assert
-            Assert.That(result, Is.EqualTo(0));
-            Assert.That(numberOfRecordsAfterOperation, Is.EqualTo(0));
+            int numberOfRecordsAfterOperation = _dbContext.ProductsSold.Count();
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(numberOfRecordsAfterOperation, Is.EqualTo(0));
+                Assert.Less(numberOfRecordsAfterOperation, numberOfRecordsBeforeOperation);
+            });
         }
 
         // Read
@@ -346,16 +355,19 @@ namespace LBT_Api.Tests.Services
             {
                 ProductSold ps = Tools.GetExampleProductSoldWithDependencies(_dbContext);
                 _dbContext.ProductsSold.Add(ps);
-                _dbContext.SaveChanges();
             }
-            int howManyRecordsInDb = _dbContext.ProductsSold.ToArray().Length;
+            _dbContext.SaveChanges();
+            int howManyRecordsInDb = _dbContext.ProductsSold.Count();
 
             // Act
             GetProductSoldDto[] result = _service.ReadAll();
 
             // Assert
-            Assert.That(result.Length, Is.EqualTo(howManyToAdd));
-            Assert.That(result.Length, Is.EqualTo(howManyRecordsInDb));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.Length, Is.EqualTo(howManyToAdd));
+                Assert.That(result.Length, Is.EqualTo(howManyRecordsInDb));
+            });
         }
 
         // ReadAllWithDependencies
@@ -364,7 +376,7 @@ namespace LBT_Api.Tests.Services
         public void ReadAllWithDependencies_NoRecordsInDb_ReturnEmptyArray()
         {
             // Assert
-            int numberOfRecordsInDb = _dbContext.Addresses.ToArray().Length;
+            int numberOfRecordsInDb = _dbContext.Addresses.Count();
 
             // Act
             GetProductSoldWithDependenciesDto[] result = _service.ReadAllWithDependencies();
@@ -389,7 +401,7 @@ namespace LBT_Api.Tests.Services
                 _dbContext.ProductsSold.Add(ps);
             }
             _dbContext.SaveChanges();
-            int howManyRecordsInDb = _dbContext.ProductsSold.ToArray().Length;
+            int howManyRecordsInDb = _dbContext.ProductsSold.Count();
 
             // Act
             GetProductSoldWithDependenciesDto[] result = _service.ReadAllWithDependencies();
@@ -462,12 +474,15 @@ namespace LBT_Api.Tests.Services
             var s = _dbContext.Sales.ToArray();
 
             // Assert
-            double saleSumValue = _dbContext.Sales.FirstOrDefault(s => s.Id == ps.SaleId).SumValue;
+            double saleSumValue = _dbContext.Sales.FirstOrDefault(s => s.Id == ps.SaleId)!.SumValue;
             double expectedSumValue = _dbContext.ProductsSold.Where(ps => ps.SaleId == ps.SaleId).Sum(ps => ps.AmountSold * ps.PriceAtTheTimeOfSale);
             int amountOfRowsInDb = _dbContext.ProductsSold.Count();
 
-            Assert.That(saleSumValue, Is.EqualTo(expectedSumValue));
-            Assert.That(amountOfRowsInDb, Is.EqualTo(1));
+            Assert.Multiple(() =>
+            {
+                Assert.That(saleSumValue, Is.EqualTo(expectedSumValue));
+                Assert.That(amountOfRowsInDb, Is.EqualTo(1));
+            });
         }
     }
 }

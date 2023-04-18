@@ -215,13 +215,19 @@ namespace LBT_Api.Tests.Services
             _dbContext.Products.Add(product);
             _dbContext.SaveChanges();
 
+            int numberOfRecordsBeforeOperation = _dbContext.Products.Count();
+
             // Act
-            int result = _service.Delete(product.Id);
-            int numberOfRecordsAfterOperation = _dbContext.Products.ToArray().Length;
+            _service.Delete(product.Id);
 
             // Assert
-            Assert.That(result, Is.EqualTo(0));
-            Assert.That(numberOfRecordsAfterOperation, Is.EqualTo(0));
+            int numberOfRecordsAfterOperation = _dbContext.Products.Count();
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(numberOfRecordsAfterOperation, Is.EqualTo(0));
+                Assert.Greater(numberOfRecordsBeforeOperation, numberOfRecordsAfterOperation);
+            });
         }
 
         // Read
@@ -256,8 +262,11 @@ namespace LBT_Api.Tests.Services
             };
 
             // Assert
-            Assert.That(result, Is.Not.Null);
-            Tools.AssertObjectsAreSameAsJSON(result, productAsDto);
+            Assert.Multiple(() =>
+            {
+                Assert.That(result, Is.Not.Null);
+                Tools.AssertObjectsAreSameAsJSON(result, productAsDto);
+            });
         }
 
         // ReadWithDependencies
@@ -301,7 +310,7 @@ namespace LBT_Api.Tests.Services
         public void ReadAll_NoRecordsInDb_ReturnEmptyArray()
         {
             // Arrange
-            int numberOfRecordsInDb = _dbContext.Products.ToArray().Length;
+            int numberOfRecordsInDb = _dbContext.Products.Count();
 
             // Act
             GetProductDto[] result = _service.ReadAll();
@@ -326,7 +335,7 @@ namespace LBT_Api.Tests.Services
                 _dbContext.Products.Add(product);
                 _dbContext.SaveChanges();
             }
-            int howManyRecordsInDb = _dbContext.Products.ToArray().Length;
+            int howManyRecordsInDb = _dbContext.Products.Count();
 
             // Act
             GetProductDto[] result = _service.ReadAll();
@@ -345,7 +354,7 @@ namespace LBT_Api.Tests.Services
         public void ReadAllWithDependencies_NoRecordsInDb_ReturnEmptyArray()
         {
             // Arrange
-            int numberOfRecordsInDb = _dbContext.Products.ToArray().Length;
+            int numberOfRecordsInDb = _dbContext.Products.Count();
 
             // Act
             GetProductWithDependenciesDto[] result = _service.ReadAllWithDependencies();
@@ -370,7 +379,7 @@ namespace LBT_Api.Tests.Services
                 _dbContext.Products.Add(product);
                 _dbContext.SaveChanges();
             }
-            int howManyRecordsInDb = _dbContext.Products.ToArray().Length;
+            int howManyRecordsInDb = _dbContext.Products.Count();
 
             // Act
             GetProductWithDependenciesDto[] result = _service.ReadAllWithDependencies();

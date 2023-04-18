@@ -47,7 +47,7 @@ namespace LBT_Api.Tests.Services
             _dbContext.Dispose();
         }
 
-        // CreateTests
+        // Create
         [Test]
         [Category("Create")]
         public void Create_DtoIsNull_ThrowArgumentNullException()
@@ -61,13 +61,13 @@ namespace LBT_Api.Tests.Services
 
         [Test]
         [Category("Create")]
-        public void Create_DtoHasMissingFields_ThrowBadRequestException()
+        public void Create_DtoHasMissingFields_ThrowInvalidModelException()
         {
             // Arrange
             CreateContactInfoDto dto = new CreateContactInfoDto();
 
             // Assert
-            Assert.Throws<BadRequestException>(() => _service.Create(dto));
+            Assert.Throws<InvalidModelException>(() => _service.Create(dto));
         }
 
         [Test]
@@ -80,17 +80,23 @@ namespace LBT_Api.Tests.Services
                 Email = "Email",
                 PhoneNumber = "PhoneNumber",
             };
+            int howManyRecordsBeforeOperation = _dbContext.ContactInfos.Count();
 
             // Act
             GetContactInfoDto result = _service.Create(dto);
-            int howManyRecordsAfterOperation = _dbContext.ContactInfos.ToArray().Length;
 
             // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.That(howManyRecordsAfterOperation, Is.EqualTo(1));
+            int howManyRecordsAfterOperation = _dbContext.ContactInfos.Count();
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(result, Is.Not.Null);
+                Assert.That(howManyRecordsAfterOperation, Is.EqualTo(1));
+                Assert.Greater(howManyRecordsAfterOperation, howManyRecordsBeforeOperation);
+            });
         }
 
-        // DeleteTests
+        // Delete
         [Test]
         [Category("Delete")]
         public void Delete_IdNotInDb_ThrowNotFoundException()
@@ -104,23 +110,29 @@ namespace LBT_Api.Tests.Services
 
         [Test]
         [Category("Delete")]
-        public void Delete_IdInDb_ReturnZero()
+        public void Delete_IdInDb_Return()
         {
             // Arrange
             ContactInfo contactInfo = Tools.GetExampleContactInfo();
             _dbContext.ContactInfos.Add(contactInfo);
             _dbContext.SaveChanges();
 
+            int numberOfRecordsBeforeOperation = _dbContext.ContactInfos.Count();
+
             // Act
-            int result = _service.Delete(contactInfo.Id);
-            int numberOfRecordsAfterOperation = _dbContext.Addresses.ToArray().Length;
+            _service.Delete(contactInfo.Id);
 
             // Assert
-            Assert.That(result, Is.EqualTo(0));
-            Assert.That(numberOfRecordsAfterOperation, Is.EqualTo(0));
+            int numberOfRecordsAfterOperation = _dbContext.Addresses.Count();
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(numberOfRecordsAfterOperation, Is.EqualTo(0));
+                Assert.Greater(numberOfRecordsBeforeOperation, numberOfRecordsAfterOperation);
+            });
         }
 
-        // ReadTests
+        // Read
         [Test]
         [Category("Read")]
         public void Read_IdNotInDb_ThrowNotFoundException()
@@ -149,7 +161,7 @@ namespace LBT_Api.Tests.Services
             Tools.AssertObjectsAreSameAsJSON(result, contactInfo);
         }
 
-        // ReadAllTests
+        // ReadAll
         [Test]
         [Category("ReadAll")]
         public void ReadAll_NoRecordsInDb_ReturnEmptyArray()
@@ -176,17 +188,20 @@ namespace LBT_Api.Tests.Services
                 _dbContext.ContactInfos.Add(contactInfo);
                 _dbContext.SaveChanges();
             }
-            int howManyRecordsInDb = _dbContext.ContactInfos.ToArray().Length;
+            int howManyRecordsInDb = _dbContext.ContactInfos.Count();
 
             // Act
             GetContactInfoDto[] result = _service.ReadAll();
 
             // Assert
-            Assert.That(result.Length, Is.EqualTo(howManyToAdd));
-            Assert.That(result.Length, Is.EqualTo(howManyRecordsInDb));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.Length, Is.EqualTo(howManyToAdd));
+                Assert.That(result.Length, Is.EqualTo(howManyRecordsInDb));
+            });
         }
 
-        // UpdateTests
+        // Update
         [Test]
         [Category("Update")]
         public void Update_DtoIsNull_ThrowArgumentNullException()
@@ -200,13 +215,13 @@ namespace LBT_Api.Tests.Services
 
         [Test]
         [Category("Update")]
-        public void Update_DtoIsMissingId_ThrowBadRequestException()
+        public void Update_DtoIsMissingId_ThrowInvalidModelException()
         {
             // Arrange
             UpdateContactInfoDto dto = new UpdateContactInfoDto();
 
             // Assert
-            Assert.Throws<BadRequestException>(() => _service.Update(dto));
+            Assert.Throws<InvalidModelException>(() => _service.Update(dto));
         }
 
         [Test]
@@ -214,7 +229,7 @@ namespace LBT_Api.Tests.Services
         public void Update_IdFromDtoNotInDb_ThrowNotFoundException()
         {
             // Arrange
-            UpdateContactInfoDto dto = new UpdateContactInfoDto()
+            UpdateContactInfoDto dto = new UpdateContactInfoDto
             {
                 Id = -1
             };

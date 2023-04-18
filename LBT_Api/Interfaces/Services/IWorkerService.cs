@@ -6,7 +6,7 @@ namespace LBT_Api.Interfaces.Services
     {
         public GetWorkerDto Create(CreateWorkerDto dto);
         public GetWorkerWithDependenciesDto CreateWithDependencies(CreateWorkerWithDependenciesDto dto);
-        public int Delete(int id);
+        public void Delete(int id);
         public GetWorkerDto Read(int id);
         public GetWorkerWithDependenciesDto ReadWithDependencies(int id);
         public GetWorkerDto[] ReadAll();

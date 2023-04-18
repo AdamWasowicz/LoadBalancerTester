@@ -23,13 +23,8 @@ namespace LBT_Api.Services
         public GetContactInfoDto Create(CreateContactInfoDto dto)
         {
             // Check dto
-            if (dto == null)
-                throw new ArgumentNullException(nameof(dto));
-
-            // Check dto fields
-            bool dtoIsValid = Tools.AllStringPropsAreNotNull(dto);
-            if (dtoIsValid == false)
-                throw new BadRequestException("Dto is missing fields");
+            if (Tools.ModelIsValid(dto) == false)
+                throw new InvalidModelException();
 
             // Create record
             ContactInfo contactInfo = _mapper.Map<ContactInfo>(dto);
@@ -48,7 +43,7 @@ namespace LBT_Api.Services
             return outputDto;
         }
 
-        public int Delete(int id)
+        public void Delete(int id)
         {
             // Check if record exists
             ContactInfo? contactInfo = _dbContext.ContactInfos.FirstOrDefault(a => a.Id == id);
@@ -65,8 +60,6 @@ namespace LBT_Api.Services
             {
                 throw new DatabaseOperationFailedException(exception.Message);
             }
-
-            return 0;
         }
 
         public GetContactInfoDto Read(int id)
@@ -93,11 +86,8 @@ namespace LBT_Api.Services
         public GetContactInfoDto Update(UpdateContactInfoDto dto)
         {
             // Check dto
-            if (dto == null)
-                throw new ArgumentNullException(nameof(dto));
-
-            if (dto.Id == null)
-                throw new BadRequestException("Dto is missing Id field");
+            if (Tools.ModelIsValid(dto) == false)
+                throw new InvalidModelException();
 
             // Check if record exist
             ContactInfo? contactInfo = _dbContext.ContactInfos.FirstOrDefault(a => a.Id == dto.Id);

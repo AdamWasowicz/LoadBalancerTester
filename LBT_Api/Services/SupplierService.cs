@@ -80,7 +80,7 @@ namespace LBT_Api.Services
 
         }
 
-        public int Delete(int id)
+        public void Delete(int id)
         {
             // Check if record exists
             Supplier? supplier = _dbContext.Suppliers.FirstOrDefault(s => s.Id == id);
@@ -97,8 +97,6 @@ namespace LBT_Api.Services
             {
                 throw new DatabaseOperationFailedException(exception.Message);
             }
-
-            return 0;
         }
 
         public GetSupplierDto Read(int id)

@@ -93,7 +93,7 @@ namespace LBT_Api.Services
 
         }
 
-        public int Delete(int id)
+        public void Delete(int id)
         {
             // Check if record exists
             Sale? sale = _dbContext.Sales.FirstOrDefault(s => s.Id == id);
@@ -106,16 +106,13 @@ namespace LBT_Api.Services
             {
                 _dbContext.Sales.Remove(sale);
                 _dbContext.SaveChanges();
+                transaction.Commit();
             }
             catch
             {
                 transaction.Rollback();
                 throw;
             }
-
-            transaction.Commit();
-
-            return 0;
         }
 
         public GetSaleDto Read(int id)
@@ -163,22 +160,15 @@ namespace LBT_Api.Services
         public GetSaleDto Update(UpdateSaleDto dto)
         {
             // Check dto
-            if (dto == null)
-                throw new ArgumentNullException(nameof(dto));
-
-            if (dto.Id == null)
-                throw new BadRequestException("Dto is missing Id field");
-
+            if (Tools.ModelIsValid(dto) == false)
+                throw new InvalidModelException();
 
             // Check if records exist
             Sale? sale = _dbContext.Sales.FirstOrDefault(s => s.Id == dto.Id);
             if (sale == null)
                 throw new NotFoundException("Sale with Id: " + dto.Id);
 
-            Worker? worker = _dbContext.Workers.FirstOrDefault(w => w.Id == dto.WorkerId);
-            if (worker == null)
-                throw new NotFoundException("Worker with Id: " + dto.Id);
-
+            Worker? worker = _dbContext.Workers.FirstOrDefault(w => w.Id == dto.WorkerId) ?? throw new NotFoundException("Worker with Id: " + dto.Id);
             Sale mappedFromDto = _mapper.Map<Sale>(dto);
             sale = Tools.UpdateObjectProperties(sale, mappedFromDto);
 

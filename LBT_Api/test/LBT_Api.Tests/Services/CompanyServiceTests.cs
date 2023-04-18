@@ -44,7 +44,7 @@ namespace LBT_Api.Tests.Services
             _dbContext.Dispose();
         }
 
-        // CreateTests
+        // Create
         [Test]
         [Category("Create")]
         public void Create_DtoIsNull_ThrowArgumentNullException()
@@ -80,16 +80,23 @@ namespace LBT_Api.Tests.Services
                 Name = company.Name
             };
 
+            int howManyRecordsBeforeOperation = _dbContext.Companys.Count();
+
             // Act
             var result = _service.Create(dto);
-            int howManyRecordsAfterOperation = _dbContext.Companys.ToArray().Length;
 
             // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.That(howManyRecordsAfterOperation, Is.EqualTo(1));
+            int howManyRecordsAfterOperation = _dbContext.Companys.Count();
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(result, Is.Not.Null);
+                Assert.That(howManyRecordsAfterOperation, Is.EqualTo(1));
+                Assert.Greater(howManyRecordsAfterOperation, howManyRecordsBeforeOperation);
+            });
         }
 
-        // DeleteTests
+        // Delete
         [Test]
         [Category("Delete")]
         public void Delete_IdNotInDb_ThrowNotFoundException()
@@ -103,23 +110,29 @@ namespace LBT_Api.Tests.Services
 
         [Test]
         [Category("Delete")]
-        public void Delete_IdInDb_ReturnZero()
+        public void Delete_IdInDb_Return()
         {
             // Arrange
             Company company = Tools.GetExampleCompanyWithDependecies(_dbContext);
             _dbContext.Companys.Add(company);
             _dbContext.SaveChanges();
 
+            int numberOfRecordsBeforeOperation = _dbContext.Companys.Count();
+
             // Act
-            int result = _service.Delete(company.Id);
-            int numberOfRecordsAfterOperation = _dbContext.Companys.ToArray().Length;
+            _service.Delete(company.Id);
 
             // Assert
-            Assert.That(result, Is.EqualTo(0));
-            Assert.That(numberOfRecordsAfterOperation, Is.EqualTo(0));
+            int numberOfRecordsAfterOperation = _dbContext.Companys.Count();
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(numberOfRecordsAfterOperation, Is.EqualTo(0));
+                Assert.Greater(numberOfRecordsBeforeOperation, numberOfRecordsAfterOperation);
+            });
         }
 
-        // ReadTests
+        // Read
         [Test]
         [Category("Read")]
         public void Read_IdNotInDb_ThrowNotFoundException()
@@ -151,17 +164,20 @@ namespace LBT_Api.Tests.Services
             };
 
             // Assert
-            Assert.That(result, Is.Not.Null);
-            Tools.AssertObjectsAreSameAsJSON(result, companyAsDto);
+            Assert.Multiple(() =>
+            {
+                Assert.That(result, Is.Not.Null);
+                Tools.AssertObjectsAreSameAsJSON(result, companyAsDto);
+            });
         }
 
-        // ReadAllTests
+        // ReadAll
         [Test]
         [Category("ReadAll")]
         public void ReadAll_NoRecordsInDb_ReturnEmptyArray()
         {
             // Assert
-            int numberOfRecordsInDb = _dbContext.Addresses.ToArray().Length;
+            int numberOfRecordsInDb = _dbContext.Addresses.Count();
 
             // Act
             GetCompanyDto[] result = _service.ReadAll();
@@ -182,17 +198,20 @@ namespace LBT_Api.Tests.Services
                 _dbContext.Companys.Add(company);
                 _dbContext.SaveChanges();
             }
-            int howManyRecordsInDb = _dbContext.Addresses.ToArray().Length;
+            int howManyRecordsInDb = _dbContext.Addresses.Count();
 
             // Act
             GetCompanyDto[] result = _service.ReadAll();
 
             // Assert
-            Assert.That(result.Length, Is.EqualTo(howManyToAdd));
-            Assert.That(result.Length, Is.EqualTo(howManyRecordsInDb));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.Length, Is.EqualTo(howManyToAdd));
+                Assert.That(result.Length, Is.EqualTo(howManyRecordsInDb));
+            });
         }
 
-        // UpdateTests
+        // UpdateName
         [Test]
         [Category("UpdateName")]
         public void UpdateName_DtoIsNull_ThrowArgumentNullException()

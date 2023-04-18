@@ -82,7 +82,7 @@ namespace LBT_Api.Services
             return outputDto;
         }
 
-        public int Delete(int id)
+        public void Delete(int id)
         {
             // Check if record exists
             Product? product = _dbContext.Products.FirstOrDefault(p => p.Id == id);
@@ -99,8 +99,6 @@ namespace LBT_Api.Services
             {
                 throw new DatabaseOperationFailedException(exception.Message);
             }
-
-            return 0;
         }
 
         public GetProductDto Read(int id)

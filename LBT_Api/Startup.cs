@@ -1,5 +1,6 @@
 ﻿using LBT_Api.Entities;
 using LBT_Api.Interfaces.Services;
+using LBT_Api.Middleware;
 using LBT_Api.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
@@ -42,6 +43,9 @@ namespace LBT_Api
             // Automapper
             services.AddAutoMapper(GetType().Assembly);
 
+            // Middleware
+            services.AddScoped<ErrorHandlingMiddleware>();
+
             // Services
             services.AddScoped<IAddressService, AddressService>();
             services.AddScoped<ICompanyService, CompanyService>();
@@ -72,14 +76,18 @@ namespace LBT_Api
             IApplicationBuilder app,
             IWebHostEnvironment env)
         {
-            // UseCORS
+            // CORS
             app.UseCors("Dev");
 
+            // Api documentation
             app.UseDeveloperExceptionPage();
             app.UseSwagger();
             app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "LBT_Api v1"));
 
-            // Use Jwt Tokens
+            // Middleware
+            app.UseMiddleware<ErrorHandlingMiddleware>();
+
+            // Jwt Tokens
             app.UseAuthentication();
 
             app.UseHttpsRedirection();

@@ -69,8 +69,6 @@ namespace LBT_Api.Tests
                 Name = "Name",
             };
 
-            return company; ;
-
             return company;
         }
 

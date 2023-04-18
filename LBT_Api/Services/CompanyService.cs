@@ -84,7 +84,7 @@ namespace LBT_Api.Services
             return outputDto;
         }
 
-        public int Delete(int id)
+        public void Delete(int id)
         {
             Company? company = _dbContext.Companys.FirstOrDefault(c => c.Id == id);
             if (company == null)
@@ -100,8 +100,6 @@ namespace LBT_Api.Services
             {
                 throw new DatabaseOperationFailedException(exception.Message);
             }
-
-            return 0;
         }
 
         public GetCompanyDto Read(int id)

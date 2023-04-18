@@ -22,13 +22,8 @@ namespace LBT_Api.Services
         public GetAddressDto Create(CreateAddressDto dto)
         {
             // Check dto
-            if (dto == null)
-                throw new ArgumentNullException(nameof(dto));
-
-            // Check dto fields
-            bool dtoIsValid = Tools.AllStringPropsAreNotNull(dto);
-            if (dtoIsValid == false)
-                throw new BadRequestException("Dto is missing fields");
+            if (Tools.ModelIsValid(dto) == false)
+                throw new InvalidModelException();
 
             // Create record
             Address address = _mapper.Map<Address>(dto);
@@ -47,7 +42,7 @@ namespace LBT_Api.Services
             return outputDto;
         }
 
-        public int Delete(int id)
+        public void Delete(int id)
         {
             // Check if record exists
             Address? address = _dbContext.Addresses.FirstOrDefault(a => a.Id == id);
@@ -64,8 +59,6 @@ namespace LBT_Api.Services
             {
                 throw new DatabaseOperationFailedException(exception.Message);
             }
-
-            return 0;
         }
 
         public GetAddressDto Read(int id)
@@ -92,11 +85,8 @@ namespace LBT_Api.Services
         public GetAddressDto Update(UpdateAddressDto dto)
         {
             // Check dto
-            if (dto == null)
-                throw new ArgumentNullException(nameof(dto));
-
-            if (dto.Id == null)
-                throw new BadRequestException("Dto is missing Id field");
+            if (Tools.ModelIsValid(dto) == false)
+                throw new InvalidModelException();
 
             // Check if record exist
             Address? address = _dbContext.Addresses.FirstOrDefault(a => a.Id == dto.Id);

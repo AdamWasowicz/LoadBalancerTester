@@ -6,7 +6,7 @@ namespace LBT_Api.Interfaces.Services
     {
         GetProductDto Create(CreateProductDto dto);
         GetProductWithDependenciesDto CreateWithDependencies(CreateProductWithDependenciesDto dto);
-        public int Delete(int id);
+        public void Delete(int id);
         public GetProductDto Read(int id);
         public GetProductWithDependenciesDto ReadWithDependencies(int id);
         public GetProductDto[] ReadAll();

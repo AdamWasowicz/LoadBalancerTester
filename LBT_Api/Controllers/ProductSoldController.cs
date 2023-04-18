@@ -32,8 +32,8 @@ namespace LBT_Api.Controllers
         [HttpDelete("{id}")]
         public ActionResult Delete([FromRoute] int id)
         {
-            var result = _productSoldService.Delete(id);
-            return Ok(result);
+            _productSoldService.Delete(id);
+            return Ok(id);
         }
 
         [HttpGet]
