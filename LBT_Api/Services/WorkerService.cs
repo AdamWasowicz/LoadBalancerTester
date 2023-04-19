@@ -49,38 +49,38 @@ namespace LBT_Api.Services
             if (Tools.ModelIsValid(dto) == false)
                 throw new InvalidModelException();
 
-            var transaction = _dbContext.Database.BeginTransaction();
             Worker worker = null;
 
-            try
-            {
-                // Dependencies
-                int companyId = _companyService.CreateWithDependencies(dto.Comapny).Id;
-
-                Address address = _mapper.Map<Address>(dto.Address);
-                _dbContext.Addresses.Add(address);
-
-                ContactInfo contactInfo = _mapper.Map<ContactInfo>(dto.ContactInfo);
-                _dbContext.ContactInfos.Add(contactInfo);
-
-                worker = new Worker
+                try
                 {
-                    Name = dto.Name,
-                    Surname = dto.Surname,
-                    CompanyId = companyId,
-                    AddressId = address.Id,
-                    ContactInfoId = contactInfo.Id
-                };
+                    // Dependencies
+                    int companyId = _companyService.CreateWithDependencies(dto.Comapny).Id;
 
-                _dbContext.Workers.Add(worker);
-                _dbContext.SaveChanges();
-                transaction.Commit();
-            }
-            catch (Exception exception)
-            {
-                transaction.Rollback();
-                throw new DatabaseOperationFailedException(exception.Message);
-            }
+                    Address address = _mapper.Map<Address>(dto.Address);
+                    _dbContext.Addresses.Add(address);
+                    _dbContext.SaveChanges();
+
+                    ContactInfo contactInfo = _mapper.Map<ContactInfo>(dto.ContactInfo);
+                    _dbContext.ContactInfos.Add(contactInfo);
+                    _dbContext.SaveChanges();
+
+                    worker = new Worker
+                    {
+                        Name = dto.Name,
+                        Surname = dto.Surname,
+                        CompanyId = companyId,
+                        AddressId = address.Id,
+                        ContactInfoId = contactInfo.Id
+                    };
+
+                    _dbContext.Workers.Add(worker);
+                    _dbContext.SaveChanges();
+                }
+                catch (Exception exception)
+                {
+                    throw new DatabaseOperationFailedException(exception.Message);
+                }
+            
 
             // Return dto
             GetWorkerWithDependenciesDto outputDto = _mapper.Map<GetWorkerWithDependenciesDto>(worker);
@@ -160,8 +160,12 @@ namespace LBT_Api.Services
             if (worker == null)
                 throw new NotFoundException("Worker with Id: " + dto.Id);
 
-            Worker mappedFromDto = _mapper.Map<Worker>(dto);
-            worker = Tools.UpdateObjectProperties(worker, mappedFromDto);
+            worker.Name = dto.Name != null
+                ? dto.Name
+                : worker.Name;
+            worker.Surname = dto.Surname != null
+                ? dto.Surname
+                : worker.Surname;
 
             // Save changes
             try

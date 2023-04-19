@@ -57,40 +57,34 @@ namespace LBT_Api.Services
             if (Tools.ModelIsValid(dto) == false)
                 throw new InvalidModelException("Model is invalid");
 
-            var transaction = _dbContext.Database.BeginTransaction();
             Sale sale = null;
-
-            try
-            {
-                // Dependencies
-                int workerId = _workerService.CreateWithDependencies(dto.Worker).Id;
-
-                // Main
-                sale = new Sale
+                try
                 {
-                    SaleDate = DateTime.Now,
-                    WorkerId = workerId,
-                    SumValue = 0,
-                };
+                    // Dependencies
+                    int workerId = _workerService.CreateWithDependencies(dto.Worker).Id;
 
-                // Save changes
-                _dbContext.Sales.Add(sale);
-                _dbContext.SaveChanges();
-                transaction.Commit();
+                    // Main
+                    sale = new Sale
+                    {
+                        SaleDate = DateTime.Now,
+                        WorkerId = workerId,
+                        SumValue = 0,
+                    };
 
-            }
-            catch (Exception exception)
-            {
-                transaction.Rollback();
-                throw new DatabaseOperationFailedException(exception.Message);
-            }
+                    // Save changes
+                    _dbContext.Sales.Add(sale);
+                    _dbContext.SaveChanges();
+                }
+                catch (Exception exception)
+                {
+                    throw new DatabaseOperationFailedException(exception.Message);
+                }
+            
 
             // Return dto
             GetSaleWithDependenciesDto outputDto = _mapper.Map<GetSaleWithDependenciesDto>(sale);
 
             return outputDto;
-
-
         }
 
         public void Delete(int id)

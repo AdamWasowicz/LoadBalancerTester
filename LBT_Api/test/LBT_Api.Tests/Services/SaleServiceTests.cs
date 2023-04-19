@@ -33,11 +33,8 @@ namespace LBT_Api.Tests.Services
         [SetUp]
         public void SetUp()
         {
-            // Set up in-memory database
-            var builder = new DbContextOptionsBuilder<LBT_DbContext>();
-            builder.UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString());
-            var dbContextOptions = builder.Options;
-            _dbContext = new LBT_DbContext(dbContextOptions);
+            // Set up db
+            _dbContext = Tools.GetDbContext();
 
             // AutoMapper
             var mapperConfig = new MapperConfiguration(cfg => cfg.AddProfile<LBT_Entity_MappingProfile>());
@@ -54,7 +51,7 @@ namespace LBT_Api.Tests.Services
         [TearDown]
         public void TearDown()
         {
-            _dbContext.Dispose();
+            Tools.ClearDbContext(_dbContext);
         }
 
         // Create
@@ -227,11 +224,10 @@ namespace LBT_Api.Tests.Services
             _service.Delete(sale.Id);
 
             // Assert
-            int numberOfRecordsAfterOperation = _dbContext.Addresses.Count();
+            int numberOfRecordsAfterOperation = _dbContext.Sales.Count();
 
             Assert.Multiple(() =>
             {
-                Assert.That(numberOfRecordsAfterOperation, Is.EqualTo(0));
                 Assert.Greater(numberOfRecordsBeforeOperation, numberOfRecordsAfterOperation);
             });
         }

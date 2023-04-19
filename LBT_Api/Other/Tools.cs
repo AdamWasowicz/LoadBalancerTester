@@ -7,27 +7,28 @@ namespace LBT_Api.Other
     public class Tools
     {
         /// <summary>
-        /// Replace obj1 properties with non-null properties from obj2
+        /// Replace original properties with non-null properties from mod
         /// </summary>
         /// <typeparam name="T">object</typeparam>
-        /// <param name="obj1">Object to be updated</param>
-        /// <param name="obj2">Object with new values</param>
-        /// <returns>Updated obj1</returns>
-        public static T UpdateObjectProperties<T>(T obj1, T obj2)
+        /// <param name="original">Object to be updated</param>
+        /// <param name="mod">Object with new values</param>
+        /// <returns>Updated original</returns>
+        public static T UpdateObjectProperties<T>(T original, T mod)
         {
-            if (obj1 == null)
-                throw new ArgumentNullException(nameof(obj1));
-            if (obj2 == null)
-                throw new ArgumentNullException(nameof(obj2));
+            if (original == null)
+                throw new ArgumentNullException(nameof(original));
+            if (mod == null)
+                throw new ArgumentNullException(nameof(mod));
 
-            foreach (PropertyInfo prop in obj1.GetType().GetProperties())
+            foreach (PropertyInfo prop in original.GetType().GetProperties())
             {
-                if (prop.GetValue(obj2, null) != null)
-                    prop.SetValue(obj1, prop.GetValue(obj2, null));
+                if (prop.GetValue(mod, null) != null)
+                    prop.SetValue(original, prop.GetValue(mod, null));
             }
 
-            return obj1;
+            return original;
         }
+
 
         public static bool AllStringPropsAreNotNull<T>(T obj)
         {

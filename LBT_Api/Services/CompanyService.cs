@@ -47,36 +47,36 @@ namespace LBT_Api.Services
             if (Tools.ModelIsValid(dto) == false)
                 throw new InvalidModelException("Model is invalid");
 
-            var transaction = _dbContext.Database.BeginTransaction();
             Company company = null;
 
-            try
-            {
-                // Dependencies
-                Address address = _mapper.Map<Address>(dto.Address);
-                _dbContext.Addresses.Add(address);
-
-                ContactInfo ci = _mapper.Map<ContactInfo>(dto.ContactInfo);
-                _dbContext.ContactInfos.Add(ci);
-
-                // Main
-                company = new Company()
+                try
                 {
-                    AddressId = address.Id,
-                    ContactInfoId = ci.Id,
-                    Name = dto.Name
-                };
-                _dbContext.Companys.Add(company);
+                    // Dependencies
+                    Address address = _mapper.Map<Address>(dto.Address);
+                    _dbContext.Addresses.Add(address);
+                    _dbContext.SaveChanges();
 
-                // Save changes
-                _dbContext.SaveChanges();
-                transaction.Commit();
-            }
-            catch (Exception exception)
-            {
-                transaction.Rollback();
-                throw new DatabaseOperationFailedException(exception.Message);
-            }
+                    ContactInfo ci = _mapper.Map<ContactInfo>(dto.ContactInfo);
+                    _dbContext.ContactInfos.Add(ci);
+                    _dbContext.SaveChanges();
+
+                    // Main
+                    company = new Company()
+                    {
+                        AddressId = address.Id,
+                        ContactInfoId = ci.Id,
+                        Name = dto.Name
+                    };
+                    _dbContext.Companys.Add(company);
+
+                    // Save changes
+                    _dbContext.SaveChanges();
+                }
+                catch (Exception exception)
+                {
+                    throw new DatabaseOperationFailedException(exception.Message);
+                }
+            
 
             // Return dto
             GetCompanyWithDependenciesDto outputDto = _mapper.Map<GetCompanyWithDependenciesDto>(company);
@@ -151,8 +151,7 @@ namespace LBT_Api.Services
             if (company == null)
                 throw new NotFoundException("Company with Id: " + dto.Id);
 
-            Company mappedComapnyFromDto = _mapper.Map<Company>(dto);
-            company = Tools.UpdateObjectProperties(company, mappedComapnyFromDto);
+            company.Name = dto.Name;
 
             // Save changes
             try

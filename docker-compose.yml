@@ -1,0 +1,40 @@
+version: '3.8'
+
+volumes:
+  lbt-db-v:
+
+networks:
+  be-n:
+
+services:
+  # Api .NET
+  lbt-api:
+    container_name: lbt-api
+    build: 
+      context: ./LBT_Api
+      dockerfile: Dockerfile
+      args:
+        ASPNETCORE_EXPOSE_PORT: ${API_PORT_INSIDE}
+    ports:
+      - "${API_PORT_OUTSIDE}:${API_PORT_INSIDE}"
+    environment:
+      LBT_DB_CONNECTION_STRING: "${LBT_DB_CONNECTION_STRING}"
+      ASPNETCORE_URLS: http://+:${API_PORT_INSIDE}
+      MODE: Development
+    networks:
+      - be-n
+  # Db PostgreSQL
+  lbt-db:
+    container_name: lbt-db
+    image: postgres:14.1-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    ports:
+      - "${DB_PORT_OUTSIDE}:${DB_PORT_INSIDE}" 
+    networks:
+      - be-n
+    volumes:
+      - 'lbt-db-v:/var/lib/postgresql/data'  

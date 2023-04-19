@@ -49,32 +49,29 @@ namespace LBT_Api.Services
             if (Tools.ModelIsValid(dto) == false)
                 throw new InvalidModelException("Dto is missing fields");
 
-            var transaction = _dbContext.Database.BeginTransaction();
             Product product = null;
 
-            try
-            {
-                // Dependencies
-                int supplierId = _supplierService.CreateWithDependencies(dto.Supplier).Id;
-
-                // Main
-                product = new Product()
+                try
                 {
-                    Name = dto.Name,
-                    PriceNow = dto.PriceNow,
-                    SupplierId = supplierId,
-                };
-                _dbContext.Products.Add(product);
+                    // Dependencies
+                    int supplierId = _supplierService.CreateWithDependencies(dto.Supplier).Id;
 
-                // Save changes
-                _dbContext.SaveChanges();
-                transaction.Commit();
-            }
-            catch (Exception exception)
-            {
-                transaction.Rollback();
-                throw new DatabaseOperationFailedException(exception.Message);
-            }
+                    // Main
+                    product = new Product()
+                    {
+                        Name = dto.Name,
+                        PriceNow = dto.PriceNow,
+                        SupplierId = supplierId,
+                    };
+                    _dbContext.Products.Add(product);
+
+                    // Save changes
+                    _dbContext.SaveChanges();
+                }
+                catch (Exception exception)
+                {
+                    throw new DatabaseOperationFailedException(exception.Message);
+                }
 
             // Return Dto
             GetProductWithDependenciesDto outputDto = _mapper.Map<GetProductWithDependenciesDto>(product);
@@ -155,8 +152,12 @@ namespace LBT_Api.Services
                 throw new NotFoundException("Product with Id: " + dto.Id);
 
             // Make changes
-            Product mappedProductFromDto = _mapper.Map<Product>(dto);
-            product = Tools.UpdateObjectProperties(product, mappedProductFromDto);
+            product.Name = dto.Name != null
+                ? dto.Name
+                : product.Name;
+            product.PriceNow = dto.PriceNow != null
+                ? (double)dto.PriceNow
+                : product.PriceNow;
 
             // Save changes
             try

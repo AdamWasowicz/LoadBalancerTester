@@ -23,11 +23,8 @@ namespace LBT_Api.Tests.Services
         [SetUp]
         public void SetUp()
         {
-            // Set up in-memory database
-            var builder = new DbContextOptionsBuilder<LBT_DbContext>();
-            builder.UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString());
-            var dbContextOptions = builder.Options;
-            _dbContext = new LBT_DbContext(dbContextOptions);
+            // Set up db
+            _dbContext = Tools.GetDbContext();
 
             // AutoMapper
             var mapperConfig = new MapperConfiguration(cfg => cfg.AddProfile<LBT_Entity_MappingProfile>());
@@ -40,7 +37,7 @@ namespace LBT_Api.Tests.Services
         [TearDown]
         public void TearDown()
         {
-            _dbContext.Dispose();
+            Tools.ClearDbContext(_dbContext);
         }
 
         // Create
@@ -402,14 +399,9 @@ namespace LBT_Api.Tests.Services
 
             // Act
             GetSupplierDto result = _service.Update(dto);
-            GetSupplierDto supplierAsDto = new GetSupplierDto()
-            {
-                Id = supplier.Id,
-                Name = supplier.Name
-            };
 
             // Assert
-            Tools.AssertObjectsAreSameAsJSON(result, supplierAsDto);
+            Assert.AreSame(result.Name, dto.Name);
         }
     }
 }

@@ -1,5 +1,8 @@
 ﻿using LBT_Api.Entities;
 using LBT_Api.Models.AddressDto;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -12,10 +15,35 @@ namespace LBT_Api.Tests
 {
     public static class Tools
     {
+        private static string DB_CONNECTION_STRING = "Host=localhost;Port=30001;Database=LBT_DB;Username=AdamDev;Password=AdamDev";
         private const bool IN_MEMORY_DB = true;
+
+        public static LBT_DbContext GetDbContext()
+        {
+            DbContextOptions<LBT_DbContext> options = null;
+            var builder = new DbContextOptionsBuilder<LBT_DbContext>();
+
+            if (IN_MEMORY_DB == true)
+                builder.UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString());
+            else
+                builder.UseNpgsql(DB_CONNECTION_STRING);
+
+            options = builder.Options;
+            LBT_DbContext context = new LBT_DbContext(options);
+            context.Database.EnsureCreated();
+
+            return context;
+        }
+
+        public static void ClearDbContext(LBT_DbContext context)
+        {
+            context.Database.EnsureDeleted();
+            //context.Dispose();
+        }
 
         public static void IgnoreInMemoryDatabase()
         {
+            return;
             if (IN_MEMORY_DB == true)
                 Assert.Ignore("Transaction are not supported in in-memory databases");
         }

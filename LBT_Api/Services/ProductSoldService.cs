@@ -68,33 +68,32 @@ namespace LBT_Api.Services
             if (Tools.ModelIsValid(dto) == false)
                 throw new InvalidModelException("Model is invalid");
 
-            var transaction = _dbContext.Database.BeginTransaction();
+            
             ProductSold ps = null;
-
-            try
-            {
-                // Dependencies
-                var product = _productService.CreateWithDependencies(dto.Product);
-                var sale = _saleService.CreateWithDependencies(dto.Sale);
-
-                // Main
-                ps = new ProductSold
+                try
                 {
-                    ProductId = product.Id,
-                    SaleId = sale.Id,
-                    AmountSold = dto.AmountSold,
-                    PriceAtTheTimeOfSale = product.PriceNow
-                };
+                    // Dependencies
+                    var product = _productService.CreateWithDependencies(dto.Product);
+                    var sale = _saleService.CreateWithDependencies(dto.Sale);
+
+                    // Main
+                    ps = new ProductSold
+                    {
+                        ProductId = product.Id,
+                        SaleId = sale.Id,
+                        AmountSold = dto.AmountSold,
+                        PriceAtTheTimeOfSale = product.PriceNow
+                    };
 
                 // Save changes
-                _dbContext.SaveChanges();
-                transaction.Commit();
-            }
-            catch (Exception exception)
-            {
-                transaction.Rollback();
-                throw new DatabaseOperationFailedException(exception.Message);
-            }
+                _dbContext.ProductsSold.Add(ps);
+                    _dbContext.SaveChanges();
+                }
+                catch (Exception exception)
+                {
+                    throw new DatabaseOperationFailedException(exception.Message);
+                }
+            
 
             // Return dto
             GetProductSoldWithDependenciesDto outputDto = _mapper.Map<GetProductSoldWithDependenciesDto>(ps);

@@ -47,31 +47,30 @@ namespace LBT_Api.Services
             if (Tools.ModelIsValid(dto) == false)
                 throw new InvalidModelException();
 
-            var transaction = _dbContext.Database.BeginTransaction();
             Supplier supplier = null;
 
-            try
-            {
-                // Dependencies
-                Address address = _mapper.Map<Address>(dto.Address);
-                _dbContext.Addresses.Add(address);
-
-                // Main
-                supplier = new Supplier
+                try
                 {
-                    AddressId = address.Id,
-                    Name = dto.Name,
-                };
+                    // Dependencies
+                    Address address = _mapper.Map<Address>(dto.Address);
+                    _dbContext.Addresses.Add(address);
+                    _dbContext.SaveChanges();
 
-                _dbContext.Suppliers.Add(supplier);
-                _dbContext.SaveChanges();
-                transaction.Commit();
-            }
-            catch (Exception exception)
-            {
-                transaction.Rollback();
-                throw new DatabaseOperationFailedException(exception.Message);
-            }
+                    // Main
+                    supplier = new Supplier
+                    {
+                        AddressId = address.Id,
+                        Name = dto.Name,
+                    };
+
+                    _dbContext.Suppliers.Add(supplier);
+                    _dbContext.SaveChanges();
+                }
+                catch (Exception exception)
+                {
+                    throw new DatabaseOperationFailedException(exception.Message);
+                }
+            
 
             // Return dto
             GetSupplierWithDependenciesDto outputDto = _mapper.Map<GetSupplierWithDependenciesDto>(supplier);
@@ -152,8 +151,9 @@ namespace LBT_Api.Services
             if (supplier == null)
                 throw new NotFoundException("Supplier with Id: " + dto.Id);
 
-            Supplier mappedFromDto = _mapper.Map<Supplier>(dto);
-            supplier = Tools.UpdateObjectProperties(supplier, mappedFromDto);
+            supplier.Name = dto.Name != null
+                ? dto.Name
+                : supplier.Name;
 
             // Save changes
             try
