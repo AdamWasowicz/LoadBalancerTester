@@ -1,4 +1,5 @@
-﻿using LBT_Api.Entities;
+﻿using AutoMapper.Internal;
+using LBT_Api.Entities;
 using LBT_Api.Models.AddressDto;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -43,7 +45,6 @@ namespace LBT_Api.Tests
 
         public static void IgnoreInMemoryDatabase()
         {
-            return;
             if (IN_MEMORY_DB == true)
                 Assert.Ignore("Transaction are not supported in in-memory databases");
         }

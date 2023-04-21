@@ -1,4 +1,5 @@
-﻿using LBT_Api.Entities;
+﻿using AutoMapper.Internal;
+using LBT_Api.Entities;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 
@@ -7,28 +8,37 @@ namespace LBT_Api.Other
     public class Tools
     {
         /// <summary>
-        /// Replace original properties with non-null properties from mod
+        /// 
         /// </summary>
         /// <typeparam name="T">object</typeparam>
-        /// <param name="original">Object to be updated</param>
-        /// <param name="mod">Object with new values</param>
-        /// <returns>Updated original</returns>
-        public static T UpdateObjectProperties<T>(T original, T mod)
+        /// <typeparam name="Z">object</typeparam>
+        /// <param name="original">original object</param>
+        /// <param name="mod">object with modifications</param>
+        /// <returns>original with replaced fields</returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        public static T UpdateObjectProperties<T, Z>(T original, Z mod)
         {
             if (original == null)
                 throw new ArgumentNullException(nameof(original));
             if (mod == null)
                 throw new ArgumentNullException(nameof(mod));
 
-            foreach (PropertyInfo prop in original.GetType().GetProperties())
+            var typesMod = mod.GetType().GetProperties();
+            var typesOri = original.GetType().GetProperties();
+
+            foreach (PropertyInfo propOri in typesOri)
             {
-                if (prop.GetValue(mod, null) != null)
-                    prop.SetValue(original, prop.GetValue(mod, null));
+                foreach (var propMod in typesMod)
+                {
+                    if (propOri.Name == propMod.Name && propMod.GetValue(mod) != null)
+                    {
+                        propOri.SetMemberValue(original, propMod.GetValue(mod)!);
+                    }
+                }
             }
 
             return original;
         }
-
 
         public static bool AllStringPropsAreNotNull<T>(T obj)
         {
