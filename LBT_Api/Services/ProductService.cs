@@ -43,6 +43,34 @@ namespace LBT_Api.Services
             return outputDto;
         }
 
+        public void CreateExampleData(int amount)
+        {
+            for (int i = 0; i < amount; i++)
+                CreateData();
+        }
+
+        public void CreateData()
+        {
+            CreateProductWithDependenciesDto dto = new CreateProductWithDependenciesDto
+            {
+                Name = "Product_Name",
+                PriceNow = 10.00,
+                Supplier = new Models.SupplierDto.CreateSupplierWithDependenciesDto
+                {
+                    Name = "Supplier_Name",
+                    Address = new Models.AddressDto.CreateAddressDto
+                    {
+                        Country = "Address_Country",
+                        City = "Address_City",
+                        BuildingNumber = "Address_BuildingNumber",
+                        Street = "Address_Street"
+                    },
+                }
+            };
+
+            CreateWithDependencies(dto);
+        }
+
         public GetProductWithDependenciesDto CreateWithDependencies(CreateProductWithDependenciesDto dto)
         {
             // Check dto
@@ -51,27 +79,27 @@ namespace LBT_Api.Services
 
             Product product = null;
 
-                try
-                {
-                    // Dependencies
-                    int supplierId = _supplierService.CreateWithDependencies(dto.Supplier).Id;
+            try
+            {
+                // Dependencies
+                int supplierId = _supplierService.CreateWithDependencies(dto.Supplier).Id;
 
-                    // Main
-                    product = new Product()
-                    {
-                        Name = dto.Name,
-                        PriceNow = dto.PriceNow,
-                        SupplierId = supplierId,
-                    };
-                    _dbContext.Products.Add(product);
-
-                    // Save changes
-                    _dbContext.SaveChanges();
-                }
-                catch (Exception exception)
+                // Main
+                product = new Product()
                 {
-                    throw new DatabaseOperationFailedException(exception.Message);
-                }
+                    Name = dto.Name,
+                    PriceNow = dto.PriceNow,
+                    SupplierId = supplierId,
+                };
+                _dbContext.Products.Add(product);
+
+                // Save changes
+                _dbContext.SaveChanges();
+            }
+            catch (Exception exception)
+            {
+                throw new DatabaseOperationFailedException(exception.Message);
+            }
 
             // Return Dto
             GetProductWithDependenciesDto outputDto = _mapper.Map<GetProductWithDependenciesDto>(product);

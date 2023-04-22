@@ -3,7 +3,10 @@ using LBT_Api.Entities;
 using LBT_Api.Exceptions;
 using LBT_Api.Interfaces.Services;
 using LBT_Api.Models.AddressDto;
+using LBT_Api.Models.CompanyDto;
+using LBT_Api.Models.ContactInfoDto;
 using LBT_Api.Models.SaleDto;
+using LBT_Api.Models.WorkerDto;
 using LBT_Api.Other;
 
 namespace LBT_Api.Services
@@ -49,6 +52,54 @@ namespace LBT_Api.Services
             GetSaleDto outputDto = _mapper.Map<GetSaleDto>(sale);
 
             return outputDto;
+        }
+
+        public void CreateExampleData(int amount)
+        {
+            for (int i = 0; i < amount; i++)
+                CreateData();
+        }
+
+        private void CreateData()
+        {
+            CreateSaleWithDependenciesDto dto = new CreateSaleWithDependenciesDto
+            {
+                Worker = new CreateWorkerWithDependenciesDto
+                {
+                    Name = "Worker_Name",
+                    Surname = "Worker_Surname",
+                    Address = new CreateAddressDto
+                    {
+                        City = "Address_City",
+                        Country = "Address_Country",
+                        BuildingNumber = "Address_BuildingNumber",
+                        Street = "Address_Street"
+                    },// Address
+                    ContactInfo = new CreateContactInfoDto
+                    {
+                        Email = "ContactInfo_Email",
+                        PhoneNumber = "ContactInfo_PhoneNumber"
+                    },// ContactInfo
+                    Comapny = new CreateCompanyWithDependenciesDto
+                    {
+                        Name = "Company_Name",
+                        Address = new CreateAddressDto
+                        {
+                            City = "Address_City",
+                            Country = "Address_Country",
+                            BuildingNumber = "Address_BuildingNumber",
+                            Street = "Address_Street"
+                        },// Address
+                        ContactInfo = new CreateContactInfoDto
+                        {
+                            Email = "ContactInfo_Email",
+                            PhoneNumber = "ContactInfo_PhoneNumber"
+                        },// ContactInfo
+                    }// Company
+                }// Worker
+            };// Sale
+
+            CreateWithDependencies(dto);
         }
 
         public GetSaleWithDependenciesDto CreateWithDependencies(CreateSaleWithDependenciesDto dto)
@@ -163,8 +214,7 @@ namespace LBT_Api.Services
                 throw new NotFoundException("Sale with Id: " + dto.Id);
 
             Worker? worker = _dbContext.Workers.FirstOrDefault(w => w.Id == dto.WorkerId) ?? throw new NotFoundException("Worker with Id: " + dto.Id);
-            Sale mappedFromDto = _mapper.Map<Sale>(dto);
-            sale = Tools.UpdateObjectProperties(sale, mappedFromDto);
+            sale = Tools.UpdateObjectProperties(sale, dto);
 
             // Save changes
             try

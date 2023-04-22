@@ -1,6 +1,7 @@
 ﻿using LBT_Api.Interfaces.Services;
 using LBT_Api.Models.CompanyDto;
 using LBT_Api.Models.SupplierDto;
+using LBT_Api.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LBT_Api.Controllers
@@ -21,6 +22,13 @@ namespace LBT_Api.Controllers
         {
             var result = _supplierService.Create(dto);
             return Created(result.Id.ToString(), result);
+        }
+
+        [HttpPost("seed/{amount}")]
+        public ActionResult Seed([FromRoute] int amount)
+        {
+            _supplierService.CreateExampleData(amount);
+            return Ok();
         }
 
         [HttpPost("full")]

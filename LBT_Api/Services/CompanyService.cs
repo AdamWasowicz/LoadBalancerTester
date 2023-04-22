@@ -41,6 +41,34 @@ namespace LBT_Api.Services
 
         }
 
+        public void CreateExampleData(int amount)
+        {
+            for (int i = 0; i < amount; i++)
+                CreateData();
+        }
+
+        private void CreateData()
+        {
+            CreateCompanyWithDependenciesDto dto = new CreateCompanyWithDependenciesDto
+            {
+                Name = "Company_Name",
+                Address = new Models.AddressDto.CreateAddressDto
+                {
+                    Country = "Address_Country",
+                    City = "Address_City",
+                    BuildingNumber = "Address_BuildingNumber",
+                    Street = "Address_Street"
+                },
+                ContactInfo = new Models.ContactInfoDto.CreateContactInfoDto
+                {
+                    Email = "ContactInfo_Email",
+                    PhoneNumber = "ContactInfo_PhoneNumber",
+                }
+            };
+
+            CreateWithDependencies(dto);
+        }
+
         public GetCompanyWithDependenciesDto CreateWithDependencies(CreateCompanyWithDependenciesDto dto)
         {
             // Check dto

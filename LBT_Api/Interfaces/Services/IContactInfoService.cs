@@ -9,5 +9,8 @@ namespace LBT_Api.Interfaces.Services
         public GetContactInfoDto Read(int id);
         public GetContactInfoDto[] ReadAll();
         public GetContactInfoDto Update(UpdateContactInfoDto dto);
+
+        // Seed
+        public void CreateExampleData(int amount);
     }
 }

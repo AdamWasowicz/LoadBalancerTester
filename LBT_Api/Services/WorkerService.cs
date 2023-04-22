@@ -2,6 +2,9 @@
 using LBT_Api.Entities;
 using LBT_Api.Exceptions;
 using LBT_Api.Interfaces.Services;
+using LBT_Api.Models.AddressDto;
+using LBT_Api.Models.CompanyDto;
+using LBT_Api.Models.ContactInfoDto;
 using LBT_Api.Models.WorkerDto;
 using LBT_Api.Other;
 
@@ -43,6 +46,51 @@ namespace LBT_Api.Services
             return outputDto;
         }
 
+        public void CreateExampleData(int amount)
+        {
+            for (int i = 0; i < amount; i++)
+                CreateData();
+        }
+
+        private void CreateData()
+        {
+            CreateWorkerWithDependenciesDto dto = new CreateWorkerWithDependenciesDto
+            {
+                Name = "Worker_Name",
+                Surname = "Worker_Surname",
+                Address = new CreateAddressDto
+                {
+                    City = "Address_City",
+                    Country = "Address_Country",
+                    BuildingNumber = "Address_BuildingNumber",
+                    Street = "Address_Street"
+                },// Address
+                ContactInfo = new CreateContactInfoDto
+                {
+                    Email = "ContactInfo_Email",
+                    PhoneNumber = "ContactInfo_PhoneNumber"
+                },// ContactInfo
+                Comapny = new CreateCompanyWithDependenciesDto
+                {
+                    Name = "Company_Name",
+                    Address = new CreateAddressDto
+                    {
+                        City = "Address_City",
+                        Country = "Address_Country",
+                        BuildingNumber = "Address_BuildingNumber",
+                        Street = "Address_Street"
+                    },// Address
+                    ContactInfo = new CreateContactInfoDto
+                    {
+                        Email = "ContactInfo_Email",
+                        PhoneNumber = "ContactInfo_PhoneNumber"
+                    },// ContactInfo
+                }// Company
+            };// Worker
+
+            CreateWithDependencies(dto);
+        }
+
         public GetWorkerWithDependenciesDto CreateWithDependencies(CreateWorkerWithDependenciesDto dto)
         {
             // Check dto
@@ -51,35 +99,35 @@ namespace LBT_Api.Services
 
             Worker worker = null;
 
-                try
+            try
+            {
+                // Dependencies
+                int companyId = _companyService.CreateWithDependencies(dto.Comapny).Id;
+
+                Address address = _mapper.Map<Address>(dto.Address);
+                _dbContext.Addresses.Add(address);
+                _dbContext.SaveChanges();
+
+                ContactInfo contactInfo = _mapper.Map<ContactInfo>(dto.ContactInfo);
+                _dbContext.ContactInfos.Add(contactInfo);
+                _dbContext.SaveChanges();
+
+                worker = new Worker
                 {
-                    // Dependencies
-                    int companyId = _companyService.CreateWithDependencies(dto.Comapny).Id;
+                    Name = dto.Name,
+                    Surname = dto.Surname,
+                    CompanyId = companyId,
+                    AddressId = address.Id,
+                    ContactInfoId = contactInfo.Id
+                };
 
-                    Address address = _mapper.Map<Address>(dto.Address);
-                    _dbContext.Addresses.Add(address);
-                    _dbContext.SaveChanges();
-
-                    ContactInfo contactInfo = _mapper.Map<ContactInfo>(dto.ContactInfo);
-                    _dbContext.ContactInfos.Add(contactInfo);
-                    _dbContext.SaveChanges();
-
-                    worker = new Worker
-                    {
-                        Name = dto.Name,
-                        Surname = dto.Surname,
-                        CompanyId = companyId,
-                        AddressId = address.Id,
-                        ContactInfoId = contactInfo.Id
-                    };
-
-                    _dbContext.Workers.Add(worker);
-                    _dbContext.SaveChanges();
-                }
-                catch (Exception exception)
-                {
-                    throw new DatabaseOperationFailedException(exception.Message);
-                }
+                _dbContext.Workers.Add(worker);
+                _dbContext.SaveChanges();
+            }
+            catch (Exception exception)
+            {
+                throw new DatabaseOperationFailedException(exception.Message);
+            }
             
 
             // Return dto

@@ -2,8 +2,14 @@
 using LBT_Api.Entities;
 using LBT_Api.Exceptions;
 using LBT_Api.Interfaces.Services;
+using LBT_Api.Models.AddressDto;
+using LBT_Api.Models.CompanyDto;
+using LBT_Api.Models.ContactInfoDto;
 using LBT_Api.Models.ProductDto;
 using LBT_Api.Models.ProductSoldDto;
+using LBT_Api.Models.SaleDto;
+using LBT_Api.Models.SupplierDto;
+using LBT_Api.Models.WorkerDto;
 using LBT_Api.Other;
 using System.Net;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
@@ -60,6 +66,74 @@ namespace LBT_Api.Services
             GetProductSoldDto outputDto = _mapper.Map<GetProductSoldDto>(ps);
 
             return outputDto;
+        }
+
+        public void CreateExampleData(int amount)
+        {
+            for (int i = 0; i < amount; i++)
+                CreateData();
+        }
+
+        private void CreateData()
+        {
+            CreateProductSoldWithDependenciesDto dto = new CreateProductSoldWithDependenciesDto
+            {
+                AmountSold = 2,
+                Product = new CreateProductWithDependenciesDto
+                {
+                    Name = "Product_Name",
+                    PriceNow = 5.55,
+                    Supplier = new CreateSupplierWithDependenciesDto
+                    {
+                        Name = "Supplier_Name",
+                        Address = new CreateAddressDto
+                        {
+                            City = "Address_City",
+                            Country = "Address_Country",
+                            BuildingNumber = "Address_BuildingNumber",
+                            Street = "Address_Street"
+                        }// Address
+                    }// Supplier
+                },// Product
+                Sale = new CreateSaleWithDependenciesDto
+                {
+                    Worker = new CreateWorkerWithDependenciesDto
+                    {
+                        Name = "Worker_Name",
+                        Surname = "Worker_Surname",
+                        Address = new CreateAddressDto
+                        {
+                            City = "Address_City",
+                            Country = "Address_Country",
+                            BuildingNumber = "Address_BuildingNumber",
+                            Street = "Address_Street"
+                        },// Address
+                        ContactInfo = new CreateContactInfoDto
+                        {
+                            Email = "ContactInfo_Email",
+                            PhoneNumber = "ContactInfo_PhoneNumber"
+                        },// ContactInfo
+                        Comapny = new CreateCompanyWithDependenciesDto
+                        {
+                            Name = "Company_Name",
+                            Address = new CreateAddressDto
+                            {
+                                City = "Address_City",
+                                Country = "Address_Country",
+                                BuildingNumber = "Address_BuildingNumber",
+                                Street = "Address_Street"
+                            },// Address
+                            ContactInfo = new CreateContactInfoDto
+                            {
+                                Email = "ContactInfo_Email",
+                                PhoneNumber = "ContactInfo_PhoneNumber"
+                            },// ContactInfo
+                        }// Company
+                    }// Worker
+                }// Sale
+            };// ProductSold
+
+            CreateWithDependencies(dto);
         }
 
         public GetProductSoldWithDependenciesDto CreateWithDependencies(CreateProductSoldWithDependenciesDto dto)

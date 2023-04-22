@@ -42,6 +42,25 @@ namespace LBT_Api.Services
             return outputDto;
         }
 
+        public void CreateExampleData(int amount)
+        {
+            for (int i = 0; i < amount; i++)
+                CreateData();
+        }
+
+        private void CreateData()
+        {
+            CreateAddressDto dto = new CreateAddressDto
+            {
+                Country = "Address_Country",
+                City = "Address_City",
+                BuildingNumber = "Address_BuildingNumber",
+                Street = "Address_Street"
+            };
+
+            Create(dto);
+        }
+
         public void Delete(int id)
         {
             // Check if record exists
@@ -93,8 +112,7 @@ namespace LBT_Api.Services
             if (address == null)
                 throw new NotFoundException("Address with Id: " + dto.Id);
 
-            Address mappedAddressFromDto = _mapper.Map<Address>(dto);
-            address = Tools.UpdateObjectProperties(address, mappedAddressFromDto);
+            address = Tools.UpdateObjectProperties(address, dto);
 
             // Save changes
             try

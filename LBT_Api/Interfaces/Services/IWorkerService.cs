@@ -12,5 +12,8 @@ namespace LBT_Api.Interfaces.Services
         public GetWorkerDto[] ReadAll();
         public GetWorkerWithDependenciesDto[] ReadAllWithDependencies();
         public GetWorkerDto Update(UpdateWorkerDto dto);
+
+        // Seed
+        public void CreateExampleData(int amount);
     }
 }

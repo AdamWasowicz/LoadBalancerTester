@@ -13,5 +13,8 @@ namespace LBT_Api.Interfaces.Services
         public GetProductSoldDto[] ReadAll();
         public GetProductSoldWithDependenciesDto[] ReadAllWithDependencies();
         public GetProductSoldDto Update(UpdateProductSoldPrice dto);
+
+        // Seed
+        public void CreateExampleData(int amount);
     }
 }

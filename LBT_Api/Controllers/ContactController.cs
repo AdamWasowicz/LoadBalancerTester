@@ -22,6 +22,13 @@ namespace LBT_Api.Controllers
             return Created(result.Id.ToString(), result);
         }
 
+        [HttpPost("seed/{amount}")]
+        public ActionResult Seed([FromRoute] int amount)
+        {
+            _contactInfoService.CreateExampleData(amount);
+            return Ok();
+        }
+
         [HttpDelete("{id}")]
         public ActionResult Delete([FromRoute] int id)
         {

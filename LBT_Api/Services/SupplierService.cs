@@ -2,6 +2,7 @@
 using LBT_Api.Entities;
 using LBT_Api.Exceptions;
 using LBT_Api.Interfaces.Services;
+using LBT_Api.Models.AddressDto;
 using LBT_Api.Models.SupplierDto;
 using LBT_Api.Other;
 
@@ -41,6 +42,29 @@ namespace LBT_Api.Services
             return outputDto;
         }
 
+        public void CreateExampleData(int amount)
+        {
+            for (int i = 0; i < amount; i++)
+                CreateData();
+        }
+
+        private void CreateData()
+        {
+            CreateSupplierWithDependenciesDto dto = new CreateSupplierWithDependenciesDto
+            {
+                Name = "Supplier_Name",
+                Address = new CreateAddressDto
+                {
+                    City = "Address_City",
+                    Country = "Address_Country",
+                    BuildingNumber = "Address_BuildingNumber",
+                    Street = "Address_Street"
+                }
+            };
+
+            CreateWithDependencies(dto);
+        }
+
         public GetSupplierWithDependenciesDto CreateWithDependencies(CreateSupplierWithDependenciesDto dto)
         {
             // Check dto
@@ -49,27 +73,27 @@ namespace LBT_Api.Services
 
             Supplier supplier = null;
 
-                try
-                {
-                    // Dependencies
-                    Address address = _mapper.Map<Address>(dto.Address);
-                    _dbContext.Addresses.Add(address);
-                    _dbContext.SaveChanges();
+            try
+            {
+                // Dependencies
+                Address address = _mapper.Map<Address>(dto.Address);
+                _dbContext.Addresses.Add(address);
+                _dbContext.SaveChanges();
 
-                    // Main
-                    supplier = new Supplier
-                    {
-                        AddressId = address.Id,
-                        Name = dto.Name,
-                    };
-
-                    _dbContext.Suppliers.Add(supplier);
-                    _dbContext.SaveChanges();
-                }
-                catch (Exception exception)
+                // Main
+                supplier = new Supplier
                 {
-                    throw new DatabaseOperationFailedException(exception.Message);
-                }
+                    AddressId = address.Id,
+                    Name = dto.Name,
+                };
+
+                _dbContext.Suppliers.Add(supplier);
+                _dbContext.SaveChanges();
+            }
+            catch (Exception exception)
+            {
+                throw new DatabaseOperationFailedException(exception.Message);
+            }
             
 
             // Return dto

@@ -43,6 +43,23 @@ namespace LBT_Api.Services
             return outputDto;
         }
 
+        public void CreateExampleData(int amount)
+        {
+            for (int i = 0; i < amount; i++)
+                CreateData();
+        }
+
+        public void CreateData()
+        {
+            CreateContactInfoDto dto = new CreateContactInfoDto
+            {
+                Email = "ContactInfo_Email",
+                PhoneNumber = "ContactInfo_PhoneNumber",
+            };
+
+            Create(dto);
+        }
+
         public void Delete(int id)
         {
             // Check if record exists
@@ -94,8 +111,7 @@ namespace LBT_Api.Services
             if (contactInfo == null)
                 throw new NotFoundException("ContactInfo with Id: " + dto.Id);
 
-            ContactInfo mappedContactInfoFromDto = _mapper.Map<ContactInfo>(dto);
-            contactInfo = Tools.UpdateObjectProperties(contactInfo, mappedContactInfoFromDto);
+            contactInfo = Tools.UpdateObjectProperties(contactInfo, dto);
 
             // Save changes
             try

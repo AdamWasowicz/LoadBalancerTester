@@ -1,5 +1,6 @@
 ﻿using LBT_Api.Interfaces.Services;
 using LBT_Api.Models.WorkerDto;
+using LBT_Api.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LBT_Api.Controllers
@@ -20,6 +21,13 @@ namespace LBT_Api.Controllers
         {
             var result = _workerService.Create(dto);
             return Created(result.Id.ToString(), result);
+        }
+
+        [HttpPost("seed/{amount}")]
+        public ActionResult Seed([FromRoute] int amount)
+        {
+            _workerService.CreateExampleData(amount);
+            return Ok();
         }
 
         [HttpPost("full")]
