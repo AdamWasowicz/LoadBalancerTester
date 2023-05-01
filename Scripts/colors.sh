@@ -1,0 +1,8 @@
+#!/bin/bash
+# Colors
+PURPLE='\033[0;95m'
+COLOR_OFF='\033[0m'
+GREEN='\033[0;92m'
+BLUE='\033[0;94m'
+PURPLE='\033[0;95m'
+YELLOW='\033[0;93m'

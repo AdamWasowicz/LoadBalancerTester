@@ -51,6 +51,13 @@ namespace LBT_Api.Controllers
             return Ok(result);
         }
 
+        [HttpGet("get/ids")]
+        public ActionResult<int[]> GetAllIds()
+        {
+            var result = _companyService.GetAllIds();
+            return Ok(result);
+        }
+
         [HttpGet("full")]
         public ActionResult<GetCompanyWithDependenciesDto[]> ReadAllWithDependencies()
         {

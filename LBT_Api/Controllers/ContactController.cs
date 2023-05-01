@@ -1,5 +1,6 @@
 ﻿using LBT_Api.Interfaces.Services;
 using LBT_Api.Models.ContactInfoDto;
+using LBT_Api.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LBT_Api.Controllers
@@ -40,6 +41,13 @@ namespace LBT_Api.Controllers
         public ActionResult<GetContactInfoDto[]> ReadAll() 
         {
             var result = _contactInfoService.ReadAll();
+            return Ok(result);
+        }
+
+        [HttpGet("get/ids")]
+        public ActionResult<int[]> GetAllIds()
+        {
+            var result = _contactInfoService.GetAllIds();
             return Ok(result);
         }
 

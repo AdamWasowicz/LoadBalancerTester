@@ -59,6 +59,13 @@ namespace LBT_Api.Controllers
             return Ok(result);
         }
 
+        [HttpGet("get/ids")]
+        public ActionResult<int[]> GetAllIds()
+        {
+            var result = _supplierService.GetAllIds();
+            return Ok(result);
+        }
+
         [HttpGet("{id}")]
         public ActionResult<GetSupplierDto> Read([FromRoute] int id)
         {

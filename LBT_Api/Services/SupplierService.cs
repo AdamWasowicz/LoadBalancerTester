@@ -193,5 +193,11 @@ namespace LBT_Api.Services
 
             return outputDto;
         }
+
+        public int[] GetAllIds()
+        {
+            var ids = _dbContext.Suppliers.AsQueryable().Select(a => a.Id).ToArray();
+            return ids;
+        }
     }
 }

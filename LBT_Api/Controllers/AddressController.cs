@@ -43,12 +43,20 @@ namespace LBT_Api.Controllers
             return Ok(result);
         }
 
+        [HttpGet("get/ids")]
+        public ActionResult<int[]> GetAllIds()
+        {
+            var result = _addressService.GetAllIds();
+            return Ok(result);
+        }
+
         [HttpGet("{id}")]
         public ActionResult<GetAddressDto> Read([FromRoute] int id)
         {
             var result = _addressService.Read(id);
             return Ok(result);
         }
+
 
         [HttpPatch]
         public ActionResult<GetAddressDto> Update([FromBody] UpdateAddressDto dto)

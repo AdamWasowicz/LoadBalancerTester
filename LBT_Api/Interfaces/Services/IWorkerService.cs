@@ -13,7 +13,8 @@ namespace LBT_Api.Interfaces.Services
         public GetWorkerWithDependenciesDto[] ReadAllWithDependencies();
         public GetWorkerDto Update(UpdateWorkerDto dto);
 
-        // Seed
+        // For testing
         public void CreateExampleData(int amount);
+        public int[] GetAllIds();
     }
 }

@@ -18,7 +18,7 @@ services:
     ports:
       - "${API_PORT_OUTSIDE}:${API_PORT_INSIDE}"
     environment:
-      LBT_DB_CONNECTION_STRING: "${LBT_DB_CONNECTION_STRING}"
+      DB_CONNECTION_STRING: "${DB_CONNECTION_STRING}"
       ASPNETCORE_URLS: http://+:${API_PORT_INSIDE}
       MODE: Development
     networks:

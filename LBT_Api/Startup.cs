@@ -55,6 +55,7 @@ namespace LBT_Api
             services.AddScoped<ISaleService, SaleService>();
             services.AddScoped<ISupplierService, SupplierService>();
             services.AddScoped<IWorkerService, WorkerService>();
+            services.AddScoped<ITestingService, TestingService>();
 
             // Swagger
             services.AddSwaggerGen(c =>

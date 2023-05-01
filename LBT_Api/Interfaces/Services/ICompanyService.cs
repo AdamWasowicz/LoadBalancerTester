@@ -13,7 +13,8 @@ namespace LBT_Api.Interfaces.Services
         public GetCompanyWithDependenciesDto[] ReadAllWithDependencies();
         public GetCompanyDto UpdateName(UpdateCompanyNameDto dto);
 
-        // Seed
+        // For testing
         public void CreateExampleData(int amount);
+        public int[] GetAllIds();
     }
 }

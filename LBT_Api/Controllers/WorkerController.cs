@@ -65,6 +65,13 @@ namespace LBT_Api.Controllers
             return Ok(result);
         }
 
+        [HttpGet("get/ids")]
+        public ActionResult<int[]> GetAllIds()
+        {
+            var result = _workerService.GetAllIds();
+            return Ok(result);
+        }
+
         [HttpGet("full/{id}")]
         public ActionResult<GetWorkerWithDependenciesDto> ReadWithDependencies([FromRoute] int id)
         {

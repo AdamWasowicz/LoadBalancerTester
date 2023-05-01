@@ -10,7 +10,8 @@ namespace LBT_Api.Interfaces.Services
         public GetAddressDto[] ReadAll();
         public GetAddressDto Update(UpdateAddressDto dto);
 
-        // Seed
+        // For testing
         public void CreateExampleData(int amount);
+        public int[] GetAllIds();
     }
 }
