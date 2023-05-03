@@ -6,7 +6,7 @@ const GlobEntries = require('webpack-glob-entries');
 // Template from https://github.com/grafana/k6-template-typescript
 module.exports = {
   mode: 'production',
-  entry: GlobEntries('./src/*test*.ts'),
+  entry: GlobEntries('./src/tests/*/*test.ts'),
   output: {
     path: path.join(__dirname, 'dist'),
     libraryTarget: 'commonjs',

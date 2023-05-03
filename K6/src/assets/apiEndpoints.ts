@@ -1,4 +1,4 @@
-const apiRoutePrefix: string = "http://localhost:30010/api/v1"
+const apiRoutePrefix: string = "http://localhost:8000/api/v1"
 
 export enum ControllersName {
     ADDRESS = "address",

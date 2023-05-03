@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: psql-db-deployment
+  labels:
+    app: psql-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: psql-db
+  template:
+    metadata:
+      labels:
+        app: psql-db
+        dude: "true"
+    spec:
+      containers:
+      - name: psql-db
+        image: postgres
+        resources:
+        ports:
+        - containerPort: 5432
+          name: psql-db
+        env:
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: lbt-secret
+              key: postgres-user
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: lbt-secret
+              key: postgres-password
+        - name: POSTGRES_DB
+          valueFrom:
+            secretKeyRef:
+              name: lbt-secret
+              key: postgres-databasename
+        volumeMounts:
+          - mountPath: "/var/lib/postgresql/data"
+            name: psql-db-volume
+      volumes:
+        - name: psql-db-volume
+          persistentVolumeClaim:
+            claimName: psql-db-volume-claim
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: psql-db-service
+spec:
+  type: NodePort
+  selector:
+    app: psql-db
+  ports:
+  - port: 5600
+    targetPort: psql-db
+    nodePort: 30000
+            

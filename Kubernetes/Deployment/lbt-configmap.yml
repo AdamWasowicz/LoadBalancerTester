@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: lbt-configmap
+data:
+  api-urls: http://+:2970
+  api-mode: Development

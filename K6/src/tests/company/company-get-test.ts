@@ -5,10 +5,10 @@ import * as aE from '../../assets/apiEndpoints';
 
 // Params
 const amountOfSeededItems: number = 50;
-const VUS: number = 5;
+const VUS: number = 20;
 const duration: string = '60s';
 
-export function setup() {
+export function setup() { 
     const res = http.post(aE.SeedEndpointRoute(aE.ControllersName.COMPANY, amountOfSeededItems))
     return;
 }
