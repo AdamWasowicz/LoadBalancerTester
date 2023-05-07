@@ -38,6 +38,13 @@ spec:
             secretKeyRef:
               name: lbt-secret
               key: postgres-databasename
+        volumeMounts:
+          - mountPath: "/var/lib/postgresql/data"
+            name: psql-db-volume
+      volumes:
+        - name: psql-db-volume
+          persistentVolumeClaim:
+            claimName: psql-db-volume-claim
 ---
 apiVersion: v1
 kind: Service
@@ -51,3 +58,4 @@ spec:
   - port: 5600
     targetPort: psql-db
     nodePort: 30000
+            

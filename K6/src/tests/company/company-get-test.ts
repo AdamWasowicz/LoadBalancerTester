@@ -4,9 +4,9 @@ import http from 'k6/http';
 import * as aE from '../../assets/apiEndpoints';
 
 // Params
-const amountOfSeededItems: number = 50;
-const VUS: number = 20;
-const duration: string = '60s';
+const amountOfSeededItems: number = 100;
+const VUS: number = 10;
+const duration: string = '30s';
 
 export function setup() { 
     const res = http.post(aE.SeedEndpointRoute(aE.ControllersName.COMPANY, amountOfSeededItems))
@@ -20,7 +20,7 @@ export function teardown() {
 
 export let options:Options = {
   vus: VUS,
-  duration: duration
+  duration: duration,
 };
 
 export default () => {
