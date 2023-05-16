@@ -1,8 +1,5 @@
 version: '3.8'
 
-volumes:
-  lbt-db-v:
-
 networks:
   be-n:
 
@@ -23,18 +20,17 @@ services:
       MODE: Development
     networks:
       - be-n
-  # Db PostgreSQL
-  lbt-db:
-    container_name: lbt-db
-    image: postgres:14.1-alpine
+  lbt-psql:
+    container_name: lbt-psql
+    build:
+      context: ./Db
+      dockerfile: Dockerfile
     restart: always
     environment:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - POSTGRES_DB=${DB_NAME}
     ports:
-      - "${DB_PORT_OUTSIDE}:${DB_PORT_INSIDE}" 
+        - "${DB_PORT_OUTSIDE}:${DB_PORT_INSIDE}" 
     networks:
       - be-n
-    volumes:
-      - 'lbt-db-v:/var/lib/postgresql/data'  

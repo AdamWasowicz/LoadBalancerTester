@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: api-deployment
 spec:
-  replicas: 2
+  replicas: 4
   selector:
     matchLabels:
       app: api
@@ -16,6 +16,9 @@ spec:
       - name: api
         image: lbt-lbt-api
         resources:
+          limits:
+            cpu: "100m"
+            memory: "400Mi"
         imagePullPolicy: Never
         ports:
         - containerPort: 2970

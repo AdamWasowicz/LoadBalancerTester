@@ -5,7 +5,7 @@ metadata:
   labels:
     app: psql-db
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: psql-db
@@ -17,8 +17,12 @@ spec:
     spec:
       containers:
       - name: psql-db
-        image: postgres
+        image: lbt-lbt-psql
         resources:
+          limits:
+            cpu: "100m"
+            memory: "400Mi"
+        imagePullPolicy: Never
         ports:
         - containerPort: 5432
           name: psql-db
