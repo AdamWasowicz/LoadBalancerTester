@@ -5,7 +5,7 @@ import * as aE from '../../assets/apiEndpoints';
 
 // Params
 const amountOfSeededItems: number = 100;
-const VUS: number = 10;
+const VUS: number = 50;
 const duration: string = '30s';
 
 export function setup() { 

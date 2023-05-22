@@ -1,4 +1,4 @@
-const apiRoutePrefix: string = "http://localhost:8000/api/v1"
+const apiRoutePrefix: string = "https://afa43d7cb99ce4cd4a4846171c184ae4-1349395474.eu-central-1.elb.amazonaws.com/api/v1"
 
 export enum ControllersName {
     ADDRESS = "address",

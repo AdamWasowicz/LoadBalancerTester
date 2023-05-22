@@ -64,5 +64,19 @@ namespace LBT_Api.Controllers
             var result = _contactInfoService.Update(dto);
             return Ok(result);
         }
+
+        [HttpDelete("testing/random")]
+        public ActionResult DeleteRandom()
+        {
+            _contactInfoService.DeleteRandom();
+            return Ok();
+        }
+
+        [HttpPatch("testing/random")]
+        public ActionResult UpdateRandom()
+        {
+            _contactInfoService.UpdateRandom();
+            return Ok();
+        }
     }
 }

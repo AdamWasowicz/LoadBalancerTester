@@ -86,5 +86,19 @@ namespace LBT_Api.Controllers
             var result = _companyService.UpdateName(dto);
             return Ok(result);
         }
+
+        [HttpDelete("testing/random")]
+        public ActionResult DeleteRandom()
+        {
+            _companyService.DeleteRandom();
+            return Ok();
+        }
+
+        [HttpPatch("testing/random")]
+        public ActionResult UpdateRandom()
+        {
+            _companyService.UpdateRandom();
+            return Ok();
+        }
     }
 }

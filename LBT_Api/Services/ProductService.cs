@@ -207,5 +207,45 @@ namespace LBT_Api.Services
             var ids = _dbContext.Products.AsQueryable().Select(a => a.Id).ToArray();
             return ids;
         }
+
+        private Product GetRandomProduct()
+        {
+            int[] items = _dbContext.Products.AsQueryable().Select(x => x.Id).ToArray();
+            Random rnd = new Random();
+            int randomIndex = rnd.Next(0, items.Length - 1);
+
+            return _dbContext.Products.FirstOrDefault(x => x.Id == items[randomIndex])!;
+        }
+
+        public void DeleteRandom()
+        {
+            var item = GetRandomProduct();
+
+            try
+            {
+                Delete(item.Id);
+            }
+            catch
+            {
+                return;
+            }
+        }
+
+        public void UpdateRandom()
+        {
+            var item = GetRandomProduct();
+            item.Name += "Updated";
+            item.PriceNow += 1;
+            UpdateProductDto dto = _mapper.Map<UpdateProductDto>(item);
+
+            try
+            {
+                Update(dto);
+            }
+            catch
+            {
+                return;
+            }
+        }
     }
 }

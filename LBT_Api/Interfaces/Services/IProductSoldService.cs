@@ -17,5 +17,7 @@ namespace LBT_Api.Interfaces.Services
         // For testing
         public void CreateExampleData(int amount);
         public int[] GetAllIds();
+        public void DeleteRandom();
+        public void UpdateRandom();
     }
 }

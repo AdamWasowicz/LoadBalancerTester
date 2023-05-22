@@ -86,5 +86,19 @@ namespace LBT_Api.Controllers
             return Ok(result);
         }
 
+        [HttpDelete("testing/random")]
+        public ActionResult DeleteRandom()
+        {
+            _productService.DeleteRandom();
+            return Ok();
+        }
+
+        [HttpPatch("testing/random")]
+        public ActionResult UpdateRandom()
+        {
+            _productService.UpdateRandom();
+            return Ok();
+        }
+
     }
 }

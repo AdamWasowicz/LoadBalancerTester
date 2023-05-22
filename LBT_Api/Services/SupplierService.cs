@@ -199,5 +199,45 @@ namespace LBT_Api.Services
             var ids = _dbContext.Suppliers.AsQueryable().Select(a => a.Id).ToArray();
             return ids;
         }
+
+        private Supplier GetRandomSupplier()
+        {
+            int[] items = _dbContext.Suppliers.AsQueryable().Select(x => x.Id).ToArray();
+            Random rnd = new Random();
+            int randomIndex = rnd.Next(0, items.Length - 1);
+
+            return _dbContext.Suppliers.FirstOrDefault(x => x.Id == items[randomIndex])!;
+        }
+
+        public void DeleteRandom()
+        {
+            var item = GetRandomSupplier();
+
+            try
+            {
+                Delete(item.Id);
+            }
+            catch
+            {
+                return;
+            }
+        }
+
+        public void UpdateRandom()
+        {
+            var item = GetRandomSupplier();
+            item.Name += "Updated";
+            
+            UpdateSupplierDto dto = _mapper.Map<UpdateSupplierDto>(item);
+
+            try
+            {
+                Update(dto);
+            }
+            catch
+            {
+                return;
+            }
+        }
     }
 }

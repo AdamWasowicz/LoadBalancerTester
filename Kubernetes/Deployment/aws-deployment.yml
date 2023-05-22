@@ -40,7 +40,7 @@ spec:
     spec:
       containers:
       - name: psql-db
-        image: lbtContainerRegistry.azurecr.io/lbt-psql
+        image: 579185636331.dkr.ecr.eu-central-1.amazonaws.com/lbt-container-registry:lbt-psql
         imagePullPolicy: Always
         resources:
           requests:
@@ -86,7 +86,7 @@ kind: Deployment
 metadata:
   name: api-deployment
 spec:
-  replicas: 8
+  replicas: 1
   selector:
     matchLabels:
       app: api
@@ -97,7 +97,7 @@ spec:
     spec:
       containers:
       - name: api
-        image: lbtContainerRegistry.azurecr.io/lbt-api
+        image: 579185636331.dkr.ecr.eu-central-1.amazonaws.com/lbt-container-registry:lbt-api
         imagePullPolicy: Always
         resources:
           requests:

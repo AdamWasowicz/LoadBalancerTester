@@ -134,5 +134,49 @@ namespace LBT_Api.Services
             var ids = _dbContext.Addresses.AsQueryable().Select(a => a.Id).ToArray();
             return ids;
         }
+
+        private Address GetRandomAddress()
+        {
+            int[] items = _dbContext.Addresses.AsQueryable().Select(x => x.Id).ToArray();
+            Random rnd = new Random();
+            int randomIndex = rnd.Next(0, items.Length - 1);
+
+            return _dbContext.Addresses.FirstOrDefault(x => x.Id == items[randomIndex])!;
+        }
+
+        public void DeleteRandom()
+        {
+            var address = GetRandomAddress();
+
+            try
+            {
+                Delete(address.Id);
+            }
+            catch
+            {
+                return;
+            }
+
+        }
+
+        public void UpdateRandom()
+        {
+            var address = GetRandomAddress();
+            address.City += "Updated";
+            address.Street += "Updated";
+            address.BuildingNumber += "Updated";
+            address.Country += "Updated";
+
+            UpdateAddressDto dto = _mapper.Map<UpdateAddressDto>(address);
+
+            try
+            {
+                Update(dto);
+            }
+            catch
+            {
+                return;
+            }
+        }
     }
 }

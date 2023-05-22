@@ -85,5 +85,19 @@ namespace LBT_Api.Controllers
             var result = _workerService.Update(dto);
             return Ok(result);
         }
+
+        [HttpDelete("testing/random")]
+        public ActionResult DeleteRandom()
+        {
+            _workerService.DeleteRandom();
+            return Ok();
+        }
+
+        [HttpPatch("testing/random")]
+        public ActionResult UpdateRandom()
+        {
+            _workerService.UpdateRandom();
+            return Ok();
+        }
     }
 }

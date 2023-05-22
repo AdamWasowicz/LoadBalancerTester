@@ -29,6 +29,21 @@ namespace LBT_Api.Controllers
             return Ok();
         }
 
+        [HttpDelete("testing/random")]
+        public ActionResult DeleteRandom()
+        {
+            _addressService.DeleteRandom();
+            return Ok();
+        }
+
+        [HttpPatch("testing/random")]
+        public ActionResult UpdateRandom()
+        {
+            _addressService.UpdateRandom();
+            return Ok();
+        }
+
+
         [HttpDelete("{id}")]
         public ActionResult Delete([FromRoute] int id)
         {

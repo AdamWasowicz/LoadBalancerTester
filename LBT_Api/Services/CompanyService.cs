@@ -4,6 +4,7 @@ using LBT_Api.Exceptions;
 using LBT_Api.Interfaces.Services;
 using LBT_Api.Models.CompanyDto;
 using LBT_Api.Other;
+using System.Net;
 
 namespace LBT_Api.Services
 {
@@ -200,6 +201,45 @@ namespace LBT_Api.Services
         {
             var ids = _dbContext.Companys.AsQueryable().Select(a => a.Id).ToArray();
             return ids;
+        }
+
+        private Company GetRandomCompany()
+        {
+            int[] items = _dbContext.Companys.AsQueryable().Select(x => x.Id).ToArray();
+            Random rnd = new Random();
+            int randomIndex = rnd.Next(0, items.Length - 1);
+
+            return _dbContext.Companys.FirstOrDefault(x => x.Id == items[randomIndex])!;
+        }
+
+        public void DeleteRandom()
+        {
+            var item = GetRandomCompany();
+
+            try
+            {
+                _dbContext.Remove(item);
+                _dbContext.SaveChanges();
+            }
+            catch
+            {
+                return;
+            }
+        }
+
+        public void UpdateRandom()
+        {
+            var item = GetRandomCompany();
+            item.Name += "Updated";
+
+            try
+            {
+                _dbContext.SaveChanges();
+            }
+            catch
+            {
+                return;
+            }
         }
     }
 }
